@@ -1,0 +1,3825 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<!-- Saved on Wednesday, July 09, 2025, 12:52 AM -->
+<!-- MuClient version 5.06 -->
+<!-- Written by Nick Gammon -->
+<!-- Home Page: http://www.mushclient.com/ -->
+<muclient>
+<world
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+
+   auto_say_override_prefix="-"
+   auto_say_string="say "
+   chat_name="Name-not-set"
+   command_stack_character=";"
+   id="d058796fb1e0bf699231aff5"
+   input_font_name="Fixedsys"
+   mapping_failure="Alas, you cannot go that way."
+   name="3Kingdoms"
+   new_activity_sound="(No sound)"
+   output_font_name="FixedSys"
+   password_base64="y"
+   password="SWxpa2VwMHRhdDBlcyE="
+   player="lazarian"
+   script_editor="notepad"
+   script_editor_argument="%file"
+   script_filename="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\worlds\Gentech\aegiscorpsegrind-tac.lua"
+   script_language="Lua"
+   site="3k.org"
+   spam_message="look"
+   speed_walk_prefix="#"
+   terminal_identification="mushclient"
+
+   arrows_change_history="y"
+   arrow_recalls_partial="y"
+   auto_pause="y"
+   auto_resize_minimum_lines="1"
+   auto_resize_maximum_lines="20"
+   chat_foreground_colour="red"
+   chat_background_colour="black"
+   chat_port="4050"
+   confirm_before_replacing_typing="y"
+   confirm_on_paste="y"
+   confirm_on_send="y"
+   connect_method="2"
+   default_trigger_sequence="100"
+   default_alias_sequence="100"
+   detect_pueblo="y"
+   display_my_input="y"
+   echo_colour="8"
+   echo_hyperlink_in_output_window="y"
+   enable_aliases="y"
+   enable_beeps="y"
+   enable_command_stack="y"
+   enable_scripts="y"
+   enable_speed_walk="y"
+   enable_timers="y"
+   enable_triggers="y"
+   enable_trigger_sounds="y"
+   fade_output_opacity_percent="20"
+   fade_output_seconds="8"
+   history_lines="5000"
+   hyperlink_adds_to_command_history="y"
+   hyperlink_colour="#0080FF"
+   input_background_colour="white"
+   input_font_height="9"
+   input_font_weight="400"
+   input_text_colour="black"
+   keep_commands_on_same_line="y"
+   keypad_enable="y"
+   line_information="y"
+   log_output="y"
+   max_output_lines="500000"
+   mud_can_change_link_colour="y"
+   mud_can_change_options="y"
+   note_text_colour="#040000"
+   output_font_height="9"
+   output_font_weight="400"
+   paste_delay_per_lines="1"
+   pixel_offset="1"
+   port="3000"
+   proxy_port="1080"
+   save_world_automatically="y"
+   script_errors_to_output_window="y"
+   send_file_delay_per_lines="1"
+   send_mxp_afk_response="y"
+   show_connect_disconnect="y"
+   show_italic="y"
+   show_underline="y"
+   spam_line_count="20"
+   tab_completion_lines="200"
+   timestamp_input_text_colour="maroon"
+   timestamp_notes_text_colour="blue"
+   timestamp_output_text_colour="white"
+   timestamp_input_back_colour="black"
+   timestamp_notes_back_colour="black"
+   timestamp_output_back_colour="black"
+   tool_tip_visible_time="5000"
+   tool_tip_start_time="400"
+   treeview_aliases="y"
+   treeview_timers="y"
+   underline_hyperlinks="y"
+   unpause_on_send="y"
+   use_custom_link_colour="y"
+   use_default_input_font="y"
+   use_default_output_font="y"
+   warn_if_scripting_inactive="y"
+   wrap_column="80"
+   write_world_name_to_log="y"
+   > <!-- end of general world attributes -->
+
+</world>
+
+<!-- triggers -->
+
+<triggers
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)There is no reason to \'mine\' here\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="98"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)You have exhausted the supply of (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="99"
+  >
+  <send>get all
+put all in bag
+nod</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)Your meditation has cleared your thoughts and strengthened your(.*?)$"
+   regexp="y"
+   sequence="99"
+  >
+  <send>cm
+me</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^&gt;? ?There is no robot here\.$"
+   regexp="y"
+   sequence="99"
+  >
+  <send>kill undead</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^&gt;? ?There is no undead here\.$"
+   regexp="y"
+   send_to="12"
+   sequence="99"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="The androids movements increase to a remarkable speed!"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   custom_colour="4"
+   enabled="y"
+   group="chat"
+   match="^(.*?) \&lt;HM\-(.*?)\&gt;\: (.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\mixkit-light-button-2580.wav"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="chat"
+   match="^(.*?) \[Gen\-Alpha\]\: (.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\mixkit-elevator-tone-2863.wav"
+  >
+  </trigger>
+  <trigger
+   group="gentech"
+   match="^(.*?) melee attacks do crushing damage\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>switchshield disruptive</send>
+  </trigger>
+  <trigger
+   group="gentech"
+   match="^(.*?) melee attacks do slashing damage\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>switchshield bladed</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="chat"
+   match="^(.*?) tells you\: (.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\mixkit-elevator-tone-2863.wav"
+  >
+  </trigger>
+  <trigger
+   expand_variables="y"
+   group="situational"
+   match="^(.*?)(Butterfly|Dolphin|Dragon|Horse|Ox|Phoenix|Rabbit|Ram|Rat|Serpent|Tiger)(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>handleNpcDetection("%2")</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mud"
+   match="^(.*?)COMBAT TIME VERY LONG\.\. YOU NEED TO FINISH THIS SUCKER UP\!(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\Desktop\MUSHclient3k\sounds\mixkit-light-button-2580.wav"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="gentech"
+   match="^(.*?)Darkness attacks (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>genscan</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)Developer unlocks and opens the large steel door\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   custom_colour="3"
+   enabled="y"
+   group="mud"
+   make_underline="y"
+   match="^(.*?)GXP Awarded from (.*?)\: (.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)It appears this part of the shaft has already been searched\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>mine</send>
+  </trigger>
+  <trigger
+   group="combat"
+   match="^(.*?)Lazarian dealt the killing blow to (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound_if_inactive="y"
+  >
+  <send>wrap all
+lk
+f
+lkk
+recharge
+nod</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)Lazarian expands his senses\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>handleStepEnd("%0")</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)Max convert possible\!(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>co</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="lightsaber"
+   match="^(.*?)Sparks fly from your lightsaber\'s handle as the circuitry fuses\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>sheath lightsaber
+draw lightstaff
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mud"
+   match="^(.*?)The glowstick glows dims as the chemical reaction dissipates\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   custom_colour="1"
+   enabled="y"
+   group="mud"
+   make_underline="y"
+   match="^(.*?)The lightning infused hammer crackles with power\, ready to dismantle once more\.(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\mixkit-light-button-2580.wav"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)The melting cheese finally evaporates from Lazarian\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>wield lightsaber
+sheath weapon
+draw lightsaber
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)There is no bear here\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>nod</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)There is no ice here\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>iceNextStep()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)This battlefield is clean\. Move along soldier\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)Toph dealt the killing blow to (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>wrap all
+lk
+f
+kki</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="dog"
+   match="^(.*?)Toph\, Lasombra\'s Vizsla looks around for something to eat but finds n(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>uw 1</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="chat"
+   match="^(.*?)Ukyo thinks \. o O \((.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\mixkit-elevator-tone-2863.wav"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="gentech"
+   match="^(.*?)You are already attacking that\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>genscan</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)You are not skilled enough to mine this\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   expand_variables="y"
+   group="combat"
+   match="^(.*?)You attack (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>genscan</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)You begin to mine the adamantium ore\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mud"
+   match="^(.*?)You catch a fish\!  It\'s kind of small\, but you(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="D:\MUSHclient3k\sounds\mixkit-light-button-2580.wav"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)You have found a deposit of (.*?) ore\!(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>mine</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)You have found nothing\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>mine</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)You have no need to enter a hibernation trance\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>cm
+me</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)You have no need to enter a restorative trance\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>cm
+me</send>
+  </trigger>
+  <trigger
+   custom_colour="1"
+   enabled="y"
+   group="mud"
+   make_italic="y"
+   make_underline="y"
+   match="^(.*?)You hit (.*?) for (.*?) damage\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)You light up the corpse and burn it away\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)You nod\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)You strike down your foe with a final strike\.(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound_if_inactive="y"
+  >
+  <send>dog dig
+wrap all
+lkk
+f
+recharge
+nod</send>
+  </trigger>
+  <trigger
+   group="combat"
+   match="^(.*?)You\'ve killed (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>dog dig
+wrap all
+lkk
+f
+recharge
+nod</send>
+  </trigger>
+  <trigger
+   group="situational"
+   match="^(.*?)Your dog gives you a puzzled look and barks\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   group="combat"
+   match="^(.*?)Your dog has begun combat with (.*?)\!(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>aaa
+a</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^(.*?)Your legs run away with you(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="D:\MUSHclient3k\sounds\mixkit-elevator-tone-2863.wav"
+  >
+  <send>l</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="lightsaber"
+   match="^(.*?)Your lightsaber begins to flicker and the handle warms\!(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>sheath lightsaber
+draw lightstaff
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="lightsaber"
+   match="^(.*?)Your lightsaber erupts in a deafening display of light and power as your(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>sheath lightsaber
+draw lightstaff
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="lightsaber"
+   match="^(.*?)Your lightsaber shuts down\, and the heat in your hand warns you of the(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>sheath lightsaber
+draw lightstaff
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="lightsaber"
+   match="^(.*?)Your lightsaber\'s blade crackles and fades to nothing as battle damage(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>sheath lightsaber
+draw lightstaff
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="lightsaber"
+   match="^(.*?)Your lightsaber\'s casing flares nearly white hot as the battery melts(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>sheath lightsaber
+draw lightstaff
+gu</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mining"
+   match="^(.*?)Your meditation has cleared your thoughts and strengthened your(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>mine</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="gentech"
+   match="^(.*?)Your reputation with Mahjongg has increased slightly\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>tactical</send>
+  </trigger>
+  <trigger
+   group="situational"
+   match="^(.*?)Zuko\, Lazarian\'s Doberman Pinscher bounds into the room\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>dog sicem balangool</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="dog"
+   match="^(.*?)Zuko\, Lazarian\'s Doberman Pinscher looks around for something to eat but finds n(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>uw 1</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="mud"
+   match="^(.*?)\[Auction\] Robert \: Up for bids\:(.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\cash-register-01.wav"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="party"
+   match="^(.*?)\[PARTY\] All gold divvied\, total\: (.*?)\.(.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   custom_colour="7"
+   enabled="y"
+   group="gentech"
+   make_underline="y"
+   match="^(.*?)\[\-\-\-\- Enhanced DNA has reverted to substandard levels\. \-\-\-\-\](.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   custom_colour="2"
+   enabled="y"
+   group="gentech"
+   make_underline="y"
+   match="^(.*?)\[\[ Energy Field Collapse Imminent\. \]\](.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   custom_colour="7"
+   group="gentech"
+   match="^(.*?)\[\[ WARNING \:\: Tactical Enhancement Termination \]\](.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>tactical</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^&gt;? ?There is no (?!reason to '|coins).*? here\.$"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^&gt;? ?You cannot\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>me</send>
+  </trigger>
+  <trigger
+   custom_colour="14"
+   enabled="y"
+   group="highlight"
+   match="^A bolt of pure energy flies out of the sky striking (.*?)\!$"
+   regexp="y"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^BING\! The button light goes off and the elevator doors open\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>enter elevator</send>
+  </trigger>
+  <trigger
+   group="Multi Line"
+   ignore_case="y"
+   lines_to_match="4"
+   keep_evaluating="y"
+   match="^Pfffzzzt\!  You transmute\:\n(.*?)\n into\:\n(.*?)\.$"
+   multi_line="y"
+   regexp="y"
+   sequence="100"
+  >
+  <send>oi</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^The elevator jerks to a halt and the doors open\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>o
+me</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^You attack Development\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>gu
+a</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="combat"
+   match="^You insert the energy cell into the handle of your (.*?)$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>get cell from backpack
+keep cell</send>
+  </trigger>
+  <trigger
+   group="combat"
+   match="^Zuko dealt the killing blow to (.*?)\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>dog dig
+wrap all
+lkk
+f
+recharge
+nod</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^\&gt; BING\! The button light goes off and the elevator doors open\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>enter elevator</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^\&gt; The elevator jerks to a halt and the doors open\.$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>o
+me</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="chat"
+   match="^\[PARTY\] (.*?)\: (.*?)$"
+   regexp="y"
+   sequence="100"
+   sound="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\sounds\mixkit-elevator-tone-2863.wav"
+  >
+  </trigger>
+  <trigger
+   group="combat"
+   match="^\[\[ Vr\: (.*?) Bo\: (.*?) Vv\: (.*?) AA\: (.*?) Vg\: (.*?) \]\]$"
+   regexp="y"
+   sequence="100"
+  >
+  <send>ast</send>
+  </trigger>
+  <trigger
+   enabled="y"
+   group="grind"
+   match="^(.*?)Lasombra dealt the killing blow to (.*?)\.(.*?)$"
+   regexp="y"
+   send_to="12"
+   sequence="101"
+  >
+  <send>onRecovery()</send>
+  </trigger>
+</triggers>
+
+<!-- aliases -->
+
+<aliases
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+  <alias
+   match="^ag (.+)$"
+   enabled="y"
+   expand_variables="y"
+   group="gentech"
+   regexp="y"
+   sequence="100"
+  >
+  <send>autoguild %1</send>
+  </alias>
+  <alias
+   match="^dra$"
+   enabled="y"
+   group="speedwalk"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>function speedwalkDra()
+    -- List of commands with optional delays
+    local commands = {
+        {action = "portal", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "e", delay = 0},
+        {action = "pay serinth", delay = 0},
+        {action = "se", delay = 50}, -- Wait 50 seconds before the next step
+        {action = "se", delay = 0}, {action = "se", delay = 0}, {action = "e", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "w", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "e", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "se", delay = 0}, {action = "e", delay = 0},
+        {action = "s", delay = 0}, {action = "sw", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "enter town", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "enter traveler", delay = 0},
+        {action = "push 2", delay = 3}, -- Wait 3 seconds
+        {action = "exit", delay = 0}, {action = "n", delay = 0}, {action = "n", delay = 0},
+        {action = "leave", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "n", delay = 0},
+        {action = "n", delay = 0}, {action = "e", delay = 0}
+    }
+
+    -- Function to execute commands with delays
+    local function executeCommands(index)
+        if index &gt; #commands then
+            ColourNote("green", "black", "Speedwalk completed!")
+            return
+        end
+
+        local cmd = commands[index]
+        Send(cmd.action)
+        if cmd.delay &gt; 0 then
+            DoAfter(cmd.delay, string.format("executeCommands(%d)", index + 1))
+        else
+            executeCommands(index + 1)
+        end
+    end
+
+    -- Start executing commands
+    executeCommands(1)
+end
+function speedwalkDra()
+    -- List of commands with optional delays
+    local commands = {
+        {action = "portal", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "e", delay = 0},
+        {action = "pay serinth", delay = 0},
+        {action = "se", delay = 50}, -- Wait 50 seconds before the next step
+        {action = "se", delay = 0}, {action = "se", delay = 0}, {action = "e", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "w", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "e", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "se", delay = 0}, {action = "e", delay = 0},
+        {action = "s", delay = 0}, {action = "sw", delay = 0}, {action = "w", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "enter town", delay = 0},
+        {action = "s", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "enter traveler", delay = 0},
+        {action = "push 2", delay = 3}, -- Wait 3 seconds
+        {action = "exit", delay = 0}, {action = "n", delay = 0}, {action = "n", delay = 0},
+        {action = "leave", delay = 0}, {action = "s", delay = 0}, {action = "s", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "w", delay = 0},
+        {action = "w", delay = 0}, {action = "w", delay = 0}, {action = "n", delay = 0},
+        {action = "n", delay = 0}, {action = "e", delay = 0}
+    }
+
+    -- Function to execute commands with delays
+    local function executeCommands(index)
+        if index &gt; #commands then
+            ColourNote("green", "black", "Speedwalk completed!")
+            return
+        end
+
+        local cmd = commands[index]
+        Send(cmd.action)
+        if cmd.delay &gt; 0 then
+            DoAfter(cmd.delay, string.format("executeCommands(%d)", index + 1))
+        else
+            executeCommands(index + 1)
+        end
+    end
+
+    -- Start executing commands
+    executeCommands(1)
+end
+</send>
+  </alias>
+  <alias
+   match="^gg (.+)$"
+   enabled="y"
+   expand_variables="y"
+   group="general"
+   regexp="y"
+   sequence="100"
+  >
+  <send>get %1
+put %1 in bag</send>
+  </alias>
+  <alias
+   match="^grind$"
+   enabled="y"
+   group="grind"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>startGrind()</send>
+  </alias>
+  <alias
+   match="^lgrind$"
+   enabled="y"
+   group="grind"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>toggleLoopGrind()</send>
+  </alias>
+  <alias
+   match="^pgrind$"
+   enabled="y"
+   group="grind"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>pauseGrindFunction()</send>
+  </alias>
+  <alias
+   match="^rgrind$"
+   enabled="y"
+   group="grind"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>resumeGrindFunction()</send>
+  </alias>
+  <alias
+   match="^stopgrind$"
+   enabled="y"
+   group="grind"
+   regexp="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>stopGrind()</send>
+  </alias>
+  <alias
+   match="^uss (.*?)$"
+   enabled="y"
+   expand_variables="y"
+   group="general"
+   regexp="y"
+   sequence="100"
+  >
+  <send>unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+unstash %1
+</send>
+  </alias>
+  <alias
+   match="aeg"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+u
+n
+n
+n
+n
+d
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+n
+n
+n
+n
+e
+bridge
+e
+se
+se
+e
+e
+enter</send>
+  </alias>
+  <alias
+   match="aegg"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>e
+s
+e
+e
+s
+s
+s
+e
+e
+n
+e
+n
+n
+n
+e
+d
+w
+w
+w
+s
+s
+w
+s
+s
+e
+d
+w
+w
+n
+n
+n
+e
+e
+e
+e
+n
+e
+</send>
+  </alias>
+  <alias
+   match="aegh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>exit
+n
+n
+w
+enter</send>
+  </alias>
+  <alias
+   match="aeghh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>w
+s
+w
+w
+w
+w
+s
+s
+s
+e
+e
+u
+w
+n
+n
+e
+n
+e
+n
+e
+e
+u
+w
+s
+s
+s
+w
+s
+w
+w
+n
+n
+n
+w
+w
+n
+w</send>
+  </alias>
+  <alias
+   match="ag"
+   enabled="y"
+   group="gentech"
+   sequence="100"
+  >
+  <send>autoguild</send>
+  </alias>
+  <alias
+   match="aim *"
+   enabled="y"
+   group="combat"
+   send_to="12"
+   sequence="100"
+  >
+  <send>SetVariable("aimtarget", "%1")
+ColourNote("white", "blue", "Target set to: %1")
+SetStatus("Target: %1")</send>
+  </alias>
+  <alias
+   match="alp"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+d</send>
+  </alias>
+  <alias
+   match="alph"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>u
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="and"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+s
+e
+e
+n
+n
+flick switch</send>
+  </alias>
+  <alias
+   match="andh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>leave
+s
+s
+w
+w
+n
+n
+w
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="bear"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+climb rainbow</send>
+  </alias>
+  <alias
+   match="bearh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide rainbow
+n
+w
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="caps"
+   enabled="y"
+   group="general"
+   sequence="100"
+  >
+  <send>eat blue
+eat orange
+eat green</send>
+  </alias>
+  <alias
+   match="cha"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide chaos</send>
+  </alias>
+  <alias
+   match="charm"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+n
+n
+n
+w
+s
+pull tab
+w
+s
+s
+s
+e
+tear</send>
+  </alias>
+  <alias
+   match="charmh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>u
+e
+n
+n
+n
+w
+u
+n
+e
+s
+s
+s
+vortex</send>
+  </alias>
+  <alias
+   match="chess"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+climb pipe</send>
+  </alias>
+  <alias
+   match="chessh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide
+w
+vortex</send>
+  </alias>
+  <alias
+   match="chi"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>enter
+u
+e
+e
+e
+d
+e
+path
+n
+n
+n
+n
+n
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+enter
+s
+s
+s
+s
+w
+door
+n
+n
+n
+e
+search urinal
+get keycard
+w
+s
+s
+s
+door
+w
+fill out application
+door
+give application to richard
+n
+w
+w
+w
+w
+n
+n
+insert keycard
+door
+drink potion</send>
+  </alias>
+  <alias
+   match="chih"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>o
+s
+s
+e
+e
+e
+e
+s
+door
+e
+e
+n
+n
+n
+n
+leave
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+s
+s
+s
+s
+s
+path
+w
+u
+w
+w
+w
+d
+o</send>
+  </alias>
+  <alias
+   match="chin"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+s
+e
+e
+n
+e
+e
+e
+s
+w
+w
+stroke pelt
+gate</send>
+  </alias>
+  <alias
+   match="chinh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>gate
+sit on bench
+e
+e
+n
+w
+w
+w
+s
+w
+w
+n
+n
+w
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="cj"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+w
+s
+s
+e
+s
+s
+e
+e
+s
+s
+s
+se
+activate pillar</send>
+  </alias>
+  <alias
+   match="cot"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide shop
+w</send>
+  </alias>
+  <alias
+   match="cra"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide chaos
+s
+s
+w
+n</send>
+  </alias>
+  <alias
+   match="crah"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+s
+s
+e
+s
+s
+e
+e
+s
+s
+s
+se
+activate pillar</send>
+  </alias>
+  <alias
+   match="cs"
+   enabled="y"
+   group="gentech"
+   sequence="100"
+  >
+  <send>standing</send>
+  </alias>
+  <alias
+   match="dogg"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+w
+w
+n
+follow tracks
+n
+climb gate
+n
+w
+n
+n
+e
+n
+n</send>
+  </alias>
+  <alias
+   match="dogh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>w
+s
+s
+w
+s
+s
+e
+s
+climb gate
+s
+return
+s
+e
+e
+vortex</send>
+  </alias>
+  <alias
+   match="dpl"
+   enabled="y"
+   group="general"
+   sequence="100"
+  >
+  <send>dog play</send>
+  </alias>
+  <alias
+   match="dra1"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>portal
+w
+w
+w
+w
+w
+w
+w
+s
+s
+s
+s
+s
+s
+s
+s
+e
+pay serinth
+pause 30
+say time</send>
+  </alias>
+  <alias
+   match="ef"
+   enabled="y"
+   group="combat"
+   sequence="100"
+  >
+  <send>efield</send>
+  </alias>
+  <alias
+   match="ein"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+s
+e
+e
+n
+n
+n
+trail
+ne
+climb gate
+w
+look at fence
+search tree
+e
+e
+n
+n
+enter
+search holder
+unlock holder
+turn holder
+climb on bench
+stagedive
+s
+s
+w
+unlock door
+open door
+n</send>
+  </alias>
+  <alias
+   match="einh"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>s
+s
+sw
+back
+s
+s
+s
+w
+w
+n
+n
+w
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="eqdog"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>withdraw 200000
+buy 2
+buy 6
+buy 7
+buy 8
+buy 9
+buy 10
+give contract to dog
+buy 2
+give collar to dog
+give barding to dog
+give razorsnout to dog
+give footies to dog
+give guards to dog</send>
+  </alias>
+  <alias
+   match="et"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+w
+s
+s
+s
+e
+s
+w
+w
+s
+w
+w
+s
+portal</send>
+  </alias>
+  <alias
+   match="eth"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>leave
+n
+e
+e
+n
+e
+e
+n
+w
+n
+n
+n
+e
+n</send>
+  </alias>
+  <alias
+   match="fan"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide fantasy</send>
+  </alias>
+  <alias
+   match="fis"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+s
+e
+e
+n
+e
+e
+s
+s
+sw
+w
+open door
+w
+kill fisherman</send>
+  </alias>
+  <alias
+   match="fis2"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>get rod
+wield rod
+door
+e
+ne
+open door
+w</send>
+  </alias>
+  <alias
+   match="fishh"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>door
+n
+n
+w
+w
+s
+w
+w
+n
+n
+w
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="fj"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>e
+e
+e
+s
+e
+e
+e
+e
+s
+s
+s
+se
+activate pillar</send>
+  </alias>
+  <alias
+   match="gga"
+   enabled="y"
+   group="general"
+   sequence="100"
+  >
+  <send>get all
+put all in steed</send>
+  </alias>
+  <alias
+   match="hal"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+w
+w
+w
+w
+e
+s
+w
+s
+e
+e
+grab joystick
+w
+s
+play halo</send>
+  </alias>
+  <alias
+   match="halh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>lie down
+n
+e
+o
+w
+w
+n
+e
+n
+w
+w
+e
+e
+e
+vortex</send>
+  </alias>
+  <alias
+   match="hbag"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+w
+w
+w
+w
+e
+s
+w
+s
+e
+e
+u
+n
+n
+d
+d
+enter
+s
+e
+e
+s
+kill merchant</send>
+  </alias>
+  <alias
+   match="hbagh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>n
+w
+w
+n
+portal
+u
+u
+s
+s
+u
+w
+w
+n
+e
+n
+w
+w
+e
+e
+e
+vortex</send>
+  </alias>
+  <alias
+   match="ho"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide surface
+nw
+s
+home</send>
+  </alias>
+  <alias
+   match="hoh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>leave
+n
+n
+n
+n
+w
+w
+n</send>
+  </alias>
+  <alias
+   match="hypa"
+   enabled="y"
+   group="gentech"
+   sequence="100"
+  >
+  <send>hypergen activate mode</send>
+  </alias>
+  <alias
+   match="ice"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>portal
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+leave
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+e
+e
+e
+n
+n
+n
+n
+n
+n
+n
+n
+n
+portal</send>
+  </alias>
+  <alias
+   match="iceh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>portal
+n
+n
+n
+n
+portal</send>
+  </alias>
+  <alias
+   match="jj"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+e
+e
+s
+s
+s
+se
+activate pillar</send>
+  </alias>
+  <alias
+   match="k"
+   enabled="y"
+   expand_variables="y"
+   group="combat"
+   sequence="100"
+  >
+  <send>kill @aimtarget</send>
+  </alias>
+  <alias
+   match="knight"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>portal
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+leave
+n
+n
+n
+n
+w
+w
+w
+w
+w
+w
+w
+w
+enter
+s
+s
+s
+search grass
+squeeze through
+s
+sw
+se
+s
+s
+e
+e
+e
+se</send>
+  </alias>
+  <alias
+   match="knighth"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>nw
+w
+w
+w
+n
+n
+ne
+nw
+n
+n
+n
+n
+n
+leave
+n
+n
+n
+n
+n
+n
+w
+w
+portal</send>
+  </alias>
+  <alias
+   match="lkm"
+   enabled="y"
+   group="general"
+   sequence="100"
+  >
+  <send>buy 1
+buy 1
+buy 1
+drop all
+llk
+llk
+llk</send>
+  </alias>
+  <alias
+   match="mah"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+w
+w
+s
+s
+draw tile</send>
+  </alias>
+  <alias
+   match="mahh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>exit
+n
+n
+e
+e
+vortex</send>
+  </alias>
+  <alias
+   match="mant"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+u
+e
+e
+e
+d
+e
+path
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+s
+enter</send>
+  </alias>
+  <alias
+   match="manth"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>leave
+n
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+path
+w
+u
+w
+w
+w
+d
+o</send>
+  </alias>
+  <alias
+   match="micro"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+u
+n
+n
+n
+n
+d
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+w
+w
+w
+w
+w
+w
+path</send>
+  </alias>
+  <alias
+   match="microh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>path
+e
+e
+e
+e
+e
+e
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+u
+s
+s
+s
+s
+d
+o</send>
+  </alias>
+  <alias
+   match="moon"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+s
+s
+w
+w
+enter
+n
+n
+n
+n</send>
+  </alias>
+  <alias
+   match="moonh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+s
+s
+s
+leave
+e
+e
+n
+n
+vortex</send>
+  </alias>
+  <alias
+   match="mor"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+w
+s
+s
+s
+e
+s
+w
+w
+s
+s</send>
+  </alias>
+  <alias
+   match="morh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>n
+n
+e
+e
+n
+w
+n
+n
+n
+e
+n</send>
+  </alias>
+  <alias
+   match="mz"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>n
+ne
+e
+sw
+ne
+s
+nw
+s
+se
+sw
+n
+w
+s
+w
+ne
+w
+n
+e
+nw
+nw
+s</send>
+  </alias>
+  <alias
+   match="peng"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>portal
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+leave
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+e
+e
+e
+e
+e
+e
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+e
+e
+n
+n
+path
+slope</send>
+  </alias>
+  <alias
+   match="pengh"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>search drift
+get gear
+wear gear
+climb wall
+climb up
+path
+s
+s
+w
+w
+w
+w
+w
+n
+n
+portal</send>
+  </alias>
+  <alias
+   match="pou"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+w
+s
+s
+s
+e
+s
+w
+w
+s
+w
+n</send>
+  </alias>
+  <alias
+   match="pouh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>s
+e
+n
+e
+e
+n
+w
+n
+n
+n
+e
+n</send>
+  </alias>
+  <alias
+   match="rpp"
+   enabled="y"
+   group="general"
+   sequence="100"
+  >
+  <send>get puppy
+rescue puppy</send>
+  </alias>
+  <alias
+   match="satch"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+s
+e
+e
+n
+n
+hole
+s
+s</send>
+  </alias>
+  <alias
+   match="satchh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>e
+n
+n
+n
+o
+s
+s
+w
+w
+n
+n
+w
+w
+w
+vortex</send>
+  </alias>
+  <alias
+   match="sci"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>slide science</send>
+  </alias>
+  <alias
+   match="secz"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+u
+n
+n
+n
+w
+n</send>
+  </alias>
+  <alias
+   match="seczh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>pause game
+s
+e
+s
+s
+s
+d
+out</send>
+  </alias>
+  <alias
+   match="sj"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>w
+w
+s
+s
+s
+s
+se
+activate pillar</send>
+  </alias>
+  <alias
+   match="spconvert"
+   enabled="y"
+   group="combat"
+   sequence="100"
+  >
+  <send>co</send>
+  </alias>
+  <alias
+   match="swole"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>enter
+u
+n
+n
+n
+n
+d
+n
+n
+n
+n
+n
+n
+n
+n
+n
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+e
+e
+enter
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+ne
+ne
+ne
+ne
+ne
+ne
+ne
+ne
+ne
+ne
+w
+n
+n
+n
+w
+load bar with 150
+lie on bench
+lift weights
+lift weights
+lift weights</send>
+  </alias>
+  <alias
+   match="swoleh"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>stand
+e
+s
+s
+s
+e
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+s
+w
+w
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+s
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+s
+s
+s
+s
+s
+s
+s
+s
+s
+u
+s
+s
+s
+s
+d
+o</send>
+  </alias>
+  <alias
+   match="syna"
+   enabled="y"
+   group="gentech"
+   sequence="100"
+  >
+  <send>synthorg activate</send>
+  </alias>
+  <alias
+   match="synd"
+   enabled="y"
+   group="gentech"
+   sequence="100"
+  >
+  <send>synthorg deactivate</send>
+  </alias>
+  <alias
+   match="taco"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+w
+w
+w
+w
+e
+n
+w
+n
+n
+taco</send>
+  </alias>
+  <alias
+   match="tacoh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>o
+s
+s
+e
+s
+w
+w
+e
+e
+e
+vortex</send>
+  </alias>
+  <alias
+   match="tran"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+e
+e
+e
+s
+s
+e
+e
+s
+w
+w
+buy 5
+theatre
+e
+enter
+pull rug
+n</send>
+  </alias>
+  <alias
+   match="tree"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>enter
+w
+w
+w
+w
+embrace void</send>
+  </alias>
+  <alias
+   match="treeh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>leave
+w
+e
+e
+e
+vortex</send>
+  </alias>
+  <alias
+   match="zell"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>portal
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+leave
+w
+w
+w
+n
+n
+n
+n
+enter
+n
+n
+w
+n
+nw
+drink from pool 9
+n
+e
+e
+e
+s
+s
+kk golem</send>
+  </alias>
+  <alias
+   match="zellg"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>portal
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+w
+leave
+w
+w
+w
+n
+n
+n
+n
+enter</send>
+  </alias>
+  <alias
+   match="zellgh"
+   enabled="y"
+   group="speedwalk"
+   sequence="100"
+  >
+  <send>leave
+s
+s
+s
+s
+e
+e
+e
+enter
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+portal</send>
+  </alias>
+  <alias
+   match="zellh"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>s
+w
+w
+w
+sw
+s
+w
+w
+w
+w
+se
+e
+e
+e
+s
+ne
+n
+n
+e
+e
+s
+w
+s
+se
+s
+e
+s
+s
+leave
+s
+s
+s
+s
+e
+e
+e
+enter
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+portal</send>
+  </alias>
+  <alias
+   match="zelll"
+   enabled="y"
+   group="boot"
+   sequence="100"
+  >
+  <send>search shelves
+get gloves
+n
+n
+w
+w
+w
+s
+get key
+n
+e
+e
+e
+s
+s
+e
+e
+e
+n
+e
+e
+e
+n
+n
+n
+n
+w
+w
+w
+w
+s
+s
+s
+s
+unlock door
+open door
+w
+get key
+e
+n
+n
+n
+n
+e
+e
+e
+e
+s
+s
+s
+s
+w
+w
+w
+s
+w
+w
+w
+n
+n
+w
+w
+n
+unlock door
+open door
+w
+w
+s
+s
+sw
+w
+w
+w
+n
+nw
+e
+e
+e
+e
+n
+ne
+e
+e
+e
+kk golem</send>
+  </alias>
+</aliases>
+
+<!-- timers -->
+
+<timers
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+</timers>
+
+<!-- macros -->
+
+<macros
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+
+  <macro name="up" type="send_now" >
+  <send>up</send>
+
+  </macro>
+
+  <macro name="down" type="send_now" >
+  <send>down</send>
+
+  </macro>
+
+  <macro name="north" type="send_now" >
+  <send>north</send>
+
+  </macro>
+
+  <macro name="south" type="send_now" >
+  <send>south</send>
+
+  </macro>
+
+  <macro name="east" type="send_now" >
+  <send>east</send>
+
+  </macro>
+
+  <macro name="west" type="send_now" >
+  <send>west</send>
+
+  </macro>
+
+  <macro name="examine" type="replace" >
+  <send>examine </send>
+
+  </macro>
+
+  <macro name="look" type="replace" >
+  <send>look </send>
+
+  </macro>
+
+  <macro name="page" type="replace" >
+  <send>page </send>
+
+  </macro>
+
+  <macro name="say" type="replace" >
+  <send>say </send>
+
+  </macro>
+
+  <macro name="whisper" type="replace" >
+  <send>whisper </send>
+
+  </macro>
+
+  <macro name="doing" type="send_now" >
+  <send>DOING</send>
+
+  </macro>
+
+  <macro name="who" type="send_now" >
+  <send>WHO</send>
+
+  </macro>
+
+  <macro name="drop" type="replace" >
+  <send>drop </send>
+
+  </macro>
+
+  <macro name="take" type="replace" >
+  <send>take </send>
+
+  </macro>
+
+  <macro name="F3" type="send_now" >
+  <send>unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+unstash good iron ore
+</send>
+
+  </macro>
+
+  <macro name="F4" type="send_now" >
+  <send>insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore
+insert ore</send>
+
+  </macro>
+
+  <macro name="logout" type="send_now" >
+  <send>LOGOUT</send>
+
+  </macro>
+
+  <macro name="quit" type="send_now" >
+  <send>QUIT</send>
+
+  </macro>
+</macros>
+
+<!-- variables -->
+
+<variables
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+  <variable name="aimtarget">balangool</variable>
+</variables>
+
+<!-- colours -->
+
+<colours
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+
+<ansi>
+
+ <normal>
+   <colour seq="1" rgb="black" />
+   <colour seq="2" rgb="maroon" />
+   <colour seq="3" rgb="green" />
+   <colour seq="4" rgb="olive" />
+   <colour seq="5" rgb="navy" />
+   <colour seq="6" rgb="purple" />
+   <colour seq="7" rgb="teal" />
+   <colour seq="8" rgb="silver" />
+
+ </normal>
+
+ <bold>
+   <colour seq="1" rgb="gray" />
+   <colour seq="2" rgb="red" />
+   <colour seq="3" rgb="lime" />
+   <colour seq="4" rgb="yellow" />
+   <colour seq="5" rgb="blue" />
+   <colour seq="6" rgb="magenta" />
+   <colour seq="7" rgb="cyan" />
+   <colour seq="8" rgb="white" />
+
+ </bold>
+
+</ansi>
+
+<custom>
+  <colour seq="1" name="Custom1" text="#FF8080" back="black" />
+  <colour seq="2" name="Custom2" text="#FFFF80" back="black" />
+  <colour seq="3" name="Custom3" text="#80FF80" back="black" />
+  <colour seq="4" name="Custom4" text="#80FFFF" back="black" />
+  <colour seq="5" name="Custom5" text="#0080FF" back="black" />
+  <colour seq="6" name="Custom6" text="#FF80C0" back="black" />
+  <colour seq="7" name="Custom7" text="red" back="black" />
+  <colour seq="8" name="Custom8" text="#0080C0" back="black" />
+  <colour seq="9" name="Custom9" text="magenta" back="black" />
+  <colour seq="10" name="Custom10" text="#804040" back="black" />
+  <colour seq="11" name="Custom11" text="#FF8040" back="black" />
+  <colour seq="12" name="Custom12" text="teal" back="black" />
+  <colour seq="13" name="Custom13" text="#004080" back="black" />
+  <colour seq="14" name="Custom14" text="#FF0080" back="black" />
+  <colour seq="15" name="Custom15" text="green" back="black" />
+  <colour seq="16" name="Custom16" text="blue" back="black" />
+
+</custom>
+</colours>
+
+<!-- keypad -->
+
+<keypad
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+
+  <key name="0" >
+  <send>look</send>
+  </key>
+
+  <key name="1" >
+  <send>sw</send>
+  </key>
+
+  <key name="2" >
+  <send>south</send>
+  </key>
+
+  <key name="3" >
+  <send>se</send>
+  </key>
+
+  <key name="4" >
+  <send>west</send>
+  </key>
+
+  <key name="5" >
+  <send>WHO</send>
+  </key>
+
+  <key name="6" >
+  <send>east</send>
+  </key>
+
+  <key name="7" >
+  <send>nw</send>
+  </key>
+
+  <key name="8" >
+  <send>north</send>
+  </key>
+
+  <key name="9" >
+  <send>ne</send>
+  </key>
+
+  <key name="." >
+  <send>hide</send>
+  </key>
+
+  <key name="/" >
+  <send>inventory</send>
+  </key>
+
+  <key name="*" >
+  <send>score</send>
+  </key>
+
+  <key name="-" >
+  <send>up</send>
+  </key>
+
+  <key name="+" >
+  <send>down</send>
+  </key>
+
+  <key name="Ctrl+0" >
+  </key>
+
+  <key name="Ctrl+1" >
+  </key>
+
+  <key name="Ctrl+2" >
+  </key>
+
+  <key name="Ctrl+3" >
+  </key>
+
+  <key name="Ctrl+4" >
+  </key>
+
+  <key name="Ctrl+5" >
+  </key>
+
+  <key name="Ctrl+6" >
+  </key>
+
+  <key name="Ctrl+7" >
+  </key>
+
+  <key name="Ctrl+8" >
+  </key>
+
+  <key name="Ctrl+9" >
+  </key>
+
+  <key name="Ctrl+." >
+  </key>
+
+  <key name="Ctrl+/" >
+  </key>
+
+  <key name="Ctrl+*" >
+  </key>
+
+  <key name="Ctrl+-" >
+  </key>
+
+  <key name="Ctrl++" >
+  </key>
+</keypad>
+
+<!-- printing -->
+
+<printing
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-07-09 00:52:49"
+  >
+
+<ansi>
+
+ <normal>
+
+ </normal>
+
+ <bold>
+   <style seq="1" bold="y" />
+   <style seq="2" bold="y" />
+   <style seq="3" bold="y" />
+   <style seq="4" bold="y" />
+   <style seq="5" bold="y" />
+   <style seq="6" bold="y" />
+   <style seq="7" bold="y" />
+   <style seq="8" bold="y" />
+
+ </bold>
+
+</ansi>
+</printing>
+
+<!-- plugins -->
+<include name="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\worlds\plugins\idle_message.xml" plugin="y" />
+<include name="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\worlds\plugins\dog-info-plugin\src\dog_info_window.xml" plugin="y" />
+<include name="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\worlds\plugins\3k_crafting_plugin.xml" plugin="y" />
+<include name="C:\Users\giovi\OneDrive\Desktop\MUSHclient3k\worlds\plugins\Health_Bar_Miniwindow - Lazarian Gentech.xml" plugin="y" />
+</muclient>
