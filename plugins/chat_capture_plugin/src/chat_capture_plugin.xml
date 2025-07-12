@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+
+<muclient>
+<plugin
+   name="Chat_Capture_Plugin"
+   author="Lasombra"
+   id="48062dcd6b968c590df50f37"
+   language="Lua"
+   purpose="Captures whisper messages in a mini window"
+   date_written="2023-10-01"
+   requires="4.40"
+   version="1.0"
+   save_state="y"
+   >
+<description trim="y">
+<![CDATA[
+Install this plugin to capture whisper messages and display them in a draggable mini window.
+]]>
+</description>
+
+</plugin>
+
+<!--  Triggers  -->
+
+<triggers>
+  <trigger
+   enabled="y"
+   match="^(.+) tells you: (.+)$"
+   regexp="y"
+   script="capture_receive"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   match="^You tell (.+): (.+)$"
+   regexp="y"
+   script="capture_send"
+   sequence="99"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   match="^^\<Psi\> (.+) \[(.+)\]\: (.+)$"
+   regexp="y"
+   script="capture_psi"
+   sequence="101"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   match="^%s+(.*)$"
+   regexp="y"
+   script="psi_continuation"
+   sequence="102"
+  >
+  </trigger>
+</triggers>
+
+<!--  Script  -->
+
+<script>
+<![CDATA[
+
+WINDOW_WIDTH      = 700
+WINDOW_HEIGHT     = 350
+BACKGROUND_COLOUR = ColourNameToRGB "lightgrey"
+FONT_COLOUR       = ColourNameToRGB "black"
+BORDER_COLOUR     = ColourNameToRGB "darkgrey"
+
+-- Global variable to store chat history
+messages      = {}    -- stores all chat lines
+
+-- Global index for last psi message
+psi_last_index = nil
+
+-- Helper: wrap text into an array of lines based on a maximum number of characters.
+function wrap_message(text, max_chars)
+  local lines = {}
+  while #text > max_chars do
+    local pos = max_chars
+    -- try to break at the last space within max_chars if possible
+    local space_pos = text:sub(1, max_chars):find("%s[^%s]*$")
+    if space_pos and space_pos < max_chars then
+      pos = space_pos
+    end
+    table.insert(lines, text:sub(1, pos))
+    text = text:sub(pos + 1)
+  end
+  if #text > 0 then table.insert(lines, text) end
+  return lines
+end
+
+-- Re-draws the chat window with the full chat history.
+function redraw_chat()
+  check(WindowRectOp(win, 2, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOUR))
+  
+  local lineSpacing = font_height + 3
+  vertical = 6
+  
+  for i = 1, #messages do
+    WindowText(win, font_id, messages[i], 10, vertical, 0, 0, FONT_COLOUR)
+    vertical = vertical + lineSpacing
+  end
+  
+  WindowShow(win, true)
+end
+
+-- Adds a new message with a timestamp and sender.
+-- Wraps message text so that only the first line includes the header while subsequent lines are indented.
+function add_message(sender, msg)
+  local timestamp = os.date("[%H:%M:%S] ")
+  local header = timestamp .. "(" .. sender .. "): "
+  local max_chars = 70
+  
+  -- Calculate available characters for message text on the first line.
+  local avail = max_chars - string.len(header)
+  local wrapped = wrap_message(msg, avail)
+  
+  local lines = {}
+  if #wrapped > 0 then
+    table.insert(lines, header .. wrapped[1])
+    local indent = string.rep(" ", string.len(header))
+    for i = 2, #wrapped do
+      table.insert(lines, indent .. wrapped[i])
+    end
+  else
+    table.insert(lines, header)
+  end
+  
+  for _, line in ipairs(lines) do
+    table.insert(messages, line)
+  end
+  
+  redraw_chat()
+end
+
+function capture_receive(name, line, wildcards)
+  local sender = wildcards[1]
+  local message = wildcards[2]
+  add_message(sender, message)
+end
+
+function capture_send(name, line, wildcards)
+  local message = wildcards[2]
+  add_message("You", message)
+end
+
+function capture_psi(name, line, wildcards)
+  local sender = wildcards[1]
+  local level = wildcards[2]
+  local message = wildcards[3]
+  local timestamp = os.date("[%H:%M:%S] ")
+  local header = timestamp .. "<Psi> " .. sender .. " [" .. level .. "]: "
+  local fullmsg = header .. message
+  table.insert(messages, fullmsg)
+  psi_last_index = #messages
+  redraw_chat()
+end
+
+function psi_continuation(name, line, wildcards)
+  if psi_last_index then
+    local cont = wildcards[1]
+    cont = cont:gsub("^%s+", "")  -- trim leading whitespace
+    messages[psi_last_index] = messages[psi_last_index] .. " " .. cont
+    redraw_chat()
+  end
+end
+
+function mousedown(flags, hotspot_id)
+  startx, starty = WindowInfo(win, 14), WindowInfo(win, 15)
+  origx, origy   = WindowInfo(win, 10), WindowInfo(win, 11)
+end
+
+function dragmove(flags, hotspot_id)
+  local posx, posy = WindowInfo(win, 17), WindowInfo(win, 18)
+  WindowPosition(win, posx - startx, posy - starty, 0, 2)
+  if posx < 0 or posx > GetInfo(281) or posy < 0 or posy > GetInfo(280) then
+    check(SetCursor(11))
+  else
+    check(SetCursor(1))
+  end
+end
+
+function dragrelease(flags, hotspot_id)
+  local newx, newy = WindowInfo(win, 17), WindowInfo(win, 18)
+  if newx < 0 or newx > GetInfo(281) or newy < 0 or newy > GetInfo(280) then
+    WindowPosition(win, origx, origy, 0, 2)
+  end
+end
+
+function OnPluginInstall ()
+  win = GetPluginID()
+  font_id = "fn"
+  
+  local x, y, mode, flags =
+      tonumber(GetVariable("windowx")) or 0,
+      tonumber(GetVariable("windowy")) or 0,
+      tonumber(GetVariable("windowmode")) or 8,
+      tonumber(GetVariable("windowflags")) or 0
+
+  check(WindowCreate(win, x, y, WINDOW_WIDTH, WINDOW_HEIGHT, mode, flags, BACKGROUND_COLOUR))
+  
+  -- Create a hotspot for dragging the window (entire area)
+  WindowAddHotspot(win, "hs1", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, "", "", "mousedown", "", "", "Drag to move", 1, 0)
+  WindowDragHandler(win, "hs1", "dragmove", "dragrelease", 0)
+  
+  check(WindowFont(win, font_id, "Fixedsys", 9, false, false, false, false, 0, 0))
+  font_height = WindowFontInfo(win, font_id, 1)
+  
+  vertical = 6
+  messages = {}     -- initialize chat history
+  
+  if GetVariable("enabled") == "false" then
+    ColourNote("yellow", "", "Warning: Plugin " .. GetPluginName() .. " is currently disabled.")
+    check(EnablePlugin(GetPluginID(), false))
+    return
+  end
+end
+
+function OnPluginDisable ()
+  WindowShow(win, false)
+end
+
+function OnPluginSaveState ()
+  SetVariable("enabled", tostring(GetPluginInfo(GetPluginID(), 17)))
+  SetVariable("windowx", tostring(WindowInfo(win, 10)))
+  SetVariable("windowy", tostring(WindowInfo(win, 11)))
+  SetVariable("windowmode", tostring(WindowInfo(win, 7)))
+  SetVariable("windowflags", tostring(WindowInfo(win, 8)))
+end
+
+]]>
+</script>
+
+</muclient>

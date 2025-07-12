@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+
+<muclient>
+<plugin
+   name="Dog_Info_Window"
+   author="Lazarian"
+   id="48062dcd6b968c590df50f77"
+   language="Lua"
+   purpose="Displays information about the dog including health, happiness, hunger, and level."
+   date_written="2023-10-01"
+   version="1.0"
+   save_state="y">
+<description trim="y">
+<![CDATA[
+This plugin shows an information window for your dog, displaying its name, health, happiness, hunger, and level.
+The window can be dragged to a new location with the mouse.
+]]>
+</description>
+</plugin>
+
+<!--  Triggers  -->
+<triggers>
+  <!-- Trigger for Happy/Hungry line -->
+  <trigger
+        enabled="y"
+        match="^--\s*Happy\s*:\s*(\d+)%\s+Hungry\s*:\s*(\d+)%$"
+        regexp="y"
+        script="dog_happy_trigger"
+        sequence="100"/>
+        
+  <!-- Trigger for Level line -->
+  <trigger
+        enabled="y"
+        match="^--\s*Level\s*:\s*(\d+)\s+\((\d+)%\)$"
+        regexp="y"
+        script="dog_level_trigger"
+        sequence="100"/>
+
+  <!-- Trigger for HP line -->
+  <trigger
+        enabled="y"
+        match="^--\s*HP\s*:\s*(\d+)\/(\d+)\s+Prot\s*:\s*(\d+)\s+Dodge\s*:\s*(\d+\.?\d*)%$"
+        regexp="y"
+        script="dog_hp_trigger"
+        sequence="100"/>
+
+  <!-- Trigger for Hit line -->
+  <trigger
+        enabled="y"
+        match="^--\s*Hit\s*:\s*(\d+)%\s+AP\s*:\s*(\d+)\s+Crit\s*:\s*(\d+\.?\d*)%$"
+        regexp="y"
+        script="dog_hit_trigger"
+        sequence="100"/>
+        
+  <!-- Trigger for Buffs line -->
+  <trigger
+        enabled="y"
+        match="^--\s*Buffs\s*:\s*(.*)$"
+        regexp="y"
+        script="dog_buffs_trigger"
+        sequence="100"/>
+        
+  <!-- Trigger for Status line -->
+  <trigger
+        enabled="y"
+        match="^--\s*Status\s*:\s*Autofeed\s*(\d+)%  $"
+        regexp="y"
+        script="dog_status_trigger"
+        sequence="100"/>
+        
+  <!-- HPBar Trigger that uses wildcards -->
+  <!-- Wildcards: [1] dog name, [2] hp, [3] maxhp, [4] happiness, [5] hungriness, [6] level, [7] percentToNext -->
+  <trigger
+        enabled="y"
+        match="^(.*?)\s*::\s*HP:\s*(\d+)\/(\d+)\s+Happy:\s*(\d+)%\s+Hungry:\s*(\d+)%\s+Level:\s*(\d+)\/(\d+)%$"
+        regexp="y"
+        script="dog_hpbar_trigger"
+        sequence="100"/>
+</triggers>
+
+<!--  Script  -->
+<script>
+<![CDATA[
+
+-- Window dimensions and colours
+WINDOW_WIDTH = 260
+WINDOW_HEIGHT = 380
+BACKGROUND_COLOUR = ColourNameToRGB "lightblue"
+FONT_COLOUR = ColourNameToRGB "darkblue"
+
+-- Global dog info variables
+dog_name = "Unknown"
+health = 0
+max_health = 100
+happiness = 0
+max_happiness = 100
+hunger = 0
+max_hunger = 100
+level = 1
+percentNext = 0    -- percent to next level gauge
+dog_buffs = ""
+  
+-- New globals from dog score:
+prot = 0
+dodge = 0
+hit = 0
+ap = 0
+crit = 0
+status_autofeed = 0
+
+-- Add new globals for individual buffs:
+buff_collar = "none"
+buff_crowns = "none"
+buff_snout = "none"
+buff_footies = "none"
+buff_barding = "none"
+buff_fido = "none"
+
+-- Variables for dragging
+dragging = false
+drag_offset_x = 0
+drag_offset_y = 0
+
+-- Global window position variables
+win_x = 0
+win_y = 0
+
+---------------------------------------------------------------
+-- Individual trigger functions
+---------------------------------------------------------------
+
+function dog_happy_trigger(name, line, wildcards)
+  happiness = tonumber(wildcards[1])
+  hunger = tonumber(wildcards[2])
+  update_display()
+end
+
+function dog_level_trigger(name, line, wildcards)
+  level = tonumber(wildcards[1])
+  update_display()
+end
+
+-- Update dog_hp_trigger to capture Prot and Dodge as well.
+function dog_hp_trigger(name, line, wildcards)
+  health = tonumber(wildcards[1])
+  max_health = tonumber(wildcards[2])
+  prot = tonumber(wildcards[3])
+  dodge = tonumber(wildcards[4])
+  update_display()
+end
+
+function dog_hit_trigger(name, line, wildcards)
+  hit = tonumber(wildcards[1])
+  ap = tonumber(wildcards[2])
+  crit = tonumber(wildcards[3])
+  update_display()
+end
+
+function dog_buffs_trigger(name, line, wildcards)
+  local buff_line = wildcards[1]
+  buff_line = string.match(buff_line, "^%s*(.-)%s*$")  -- trim leading/trailing whitespace
+  print("DEBUG: dog_buffs_trigger fired with buffs: " .. tostring(buff_line))
+  local b1, b2, b3, b4, b5a, b5b, b6a, b6b = string.match(buff_line, "^(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$")
+  if not b1 then
+    print("DEBUG: Buffs pattern did not match expected format!")
+    buff_collar = "none"
+    buff_crowns = "none"
+    buff_snout = "none"
+    buff_footies = "none"
+    buff_barding = "none"
+    buff_fido = "none"
+  else
+    buff_collar = b1
+    buff_crowns = b2
+    buff_snout = b3
+    buff_footies = b4
+    buff_barding = b5a .. " " .. b5b
+    buff_fido = b6a .. " " .. b6b
+  end
+  update_display()
+end
+
+function dog_status_trigger(name, line, wildcards)
+  print("DEBUG: dog_status_trigger fired with value: " .. tostring(wildcards[1]))
+  status_autofeed = tonumber(wildcards[1])
+  update_display()
+end
+
+-- Composite HPBar trigger (if used) – does not update extra fields.
+function dog_hpbar_trigger(name, line, wildcards)
+  dog_name = wildcards[1]
+  health = tonumber(wildcards[2])
+  max_health = tonumber(wildcards[3])
+  happiness = tonumber(wildcards[4])
+  hunger = tonumber(wildcards[5])
+  level = tonumber(wildcards[6])
+  percentNext = tonumber(wildcards[7])
+  update_display()
+end
+
+---------------------------------------------------------------
+-- Display Functions
+---------------------------------------------------------------
+
+function update_display()
+  check(WindowRectOp(win, 2, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOUR))
+  local vertical = 10
+  
+  -- Top line: dog name with autofeed status
+  WindowText(win, font_id, "Dog Name: " .. dog_name .. " (Autofeed: " .. status_autofeed .. "%)", 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  
+  -- Gauges for HP, Happy, Hungry and Level
+  local health_percent = health / max_health
+  DoGauge("HP: " .. health .. "/" .. max_health, health_percent, ColourNameToRGB "green", vertical)
+  vertical = vertical + 40
+  
+  local happy_percent = happiness / max_happiness
+  DoGauge("Happy: " .. happiness .. "%", happy_percent, ColourNameToRGB "yellow", vertical)
+  vertical = vertical + 40
+  
+  local hunger_percent = hunger / max_hunger
+  DoGauge("Hungry: " .. hunger .. "%", hunger_percent, ColourNameToRGB "red", vertical)
+  vertical = vertical + 40
+  
+  local level_percent = percentNext / 100
+  DoGauge("Level: " .. level, level_percent, ColourNameToRGB "blue", vertical)
+  vertical = vertical + 40
+  
+  -- Under gauges: display Prot and Dodge on one line
+  WindowText(win, font_id, "Prot: " .. prot .. "   Dodge: " .. dodge, 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  
+  -- Next line: display Hit, AP and Crit
+  WindowText(win, font_id, "Hit: " .. hit .. "   AP: " .. ap .. "   Crit: " .. crit, 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  
+  -- Finally, list buffs. First, print a "Buffs:" header.
+  WindowText(win, font_id, "Buffs:", 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  
+  WindowText(win, font_id, "Neck: " .. buff_collar, 20, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  WindowText(win, font_id, "Teeth: " .. buff_crowns, 20, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  WindowText(win, font_id, "Face: " .. buff_snout, 20, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  WindowText(win, font_id, "Paws: " .. buff_footies, 20, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  WindowText(win, font_id, "Body: " .. buff_barding, 20, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 20
+  WindowText(win, font_id, "Other: " .. buff_fido, 20, vertical, 0, 0, FONT_COLOUR)
+
+  -- New: trigger "dog pet" if dog happiness is less than 100%
+  if happiness < 100 then
+      Send("dog pet")
+  end
+end
+
+function DoGauge(sPrompt, Percent, Colour, vertical)
+  local Fraction = tonumber(Percent)
+  if Fraction > 1 then Fraction = 1 end
+  if Fraction < 0 then Fraction = 0 end
+  local gauge_width = (WINDOW_WIDTH - 20) * Fraction
+  
+  WindowText(win, font_id, sPrompt, 10, vertical, 0, 0, FONT_COLOUR)
+  WindowRectOp(win, 2, 10, vertical + 15, WINDOW_WIDTH - 20, vertical + 35, BACKGROUND_COLOUR)
+  if gauge_width > 0 then
+    WindowRectOp(win, 1, 10, vertical + 15, gauge_width, vertical + 35, Colour)
+  end
+end
+
+---------------------------------------------------------------
+-- Plugin and Drag Functions
+---------------------------------------------------------------
+
+function OnPluginInstall ()
+  win = GetPluginID()
+  font_id = "fn"
+  font_name = "Fixedsys"
+  
+  win_x = 0
+  win_y = 0
+
+  check(WindowCreate(win, win_x, win_y, WINDOW_WIDTH, WINDOW_HEIGHT, 8, 0, BACKGROUND_COLOUR))
+  check(WindowFont(win, font_id, font_name, 9, false, false, false, false, 0, 0))
+  
+  WindowAddHotspot(win, "hs1", 0, 0, 0, 0, "", "", "mousedown", "", "", "Drag to move", 1, 0)
+  WindowDragHandler(win, "hs1", "dragmove", "dragrelease", 0)
+  
+  update_display()
+  WindowShow(win, true)
+end
+
+-- Global variables for drag start positions
+local startx, starty, origx, origy
+
+function mousedown(flags, hotspot_id)
+  startx = WindowInfo(win, 14)
+  starty = WindowInfo(win, 15)
+  origx = WindowInfo(win, 10)
+  origy = WindowInfo(win, 11)
+end
+
+function dragmove(flags, hotspot_id)
+  local posx = WindowInfo(win, 17)
+  local posy = WindowInfo(win, 18)
+  local new_x = posx - startx
+  local new_y = posy - starty
+  WindowPosition(win, new_x, new_y, 0, 2)
+end
+
+function dragrelease(flags, hotspot_id)
+  -- Optional bounds checking can be added here.
+end
+
+function OnPluginDisable ()
+  WindowShow(win, false)
+end
+
+function OnPluginSaveState ()
+  SetVariable("dog_name", dog_name)
+  SetVariable("health", health)
+  SetVariable("happiness", happiness)
+  SetVariable("hunger", hunger)
+  SetVariable("level", level)
+end
+
+]]>
+</script>
+
+</muclient>

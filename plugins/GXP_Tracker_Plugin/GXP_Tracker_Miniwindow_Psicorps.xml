@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+
+<muclient>
+  <plugin
+     name="GXP_Tracker_Plugin"
+     author="Your Name"
+     id="48062dcd6b968c590df50f35"
+     language="Lua"
+     purpose="Tracks GXP earned over time."
+     date_written="2025-03-15"
+     requires="4.40"
+     version="1.0"
+     save_state="y"
+     >
+    <description trim="y">
+    <![CDATA[
+This plugin tracks each GXP event triggered by the message:
+  >GXP Awarded from NPCName: Amount
+It records the NPC name, XP amount, and timestamp, then displays:
+  • GXP per hour (session average)
+  • GXP per 30 minutes (recent performance)
+  • Total GXP this session
+  • Highest GXP record kill (Name, amount, and date/time)
+]]>
+    </description>
+  </plugin>
+
+  <!--  Triggers  -->
+  <triggers>
+    <!-- Trigger to capture GXP events.
+         The pattern allows for optional ">" characters at the start.
+         Group 1: Leading ">" (optional)
+         Group 2: NPC name
+         Group 3: XP amount -->
+    <trigger
+      enabled="y"
+      match="^(>*)GXP Awarded from (.+): (\d+)"
+      regexp="y"
+      script="record_gxp"
+      sequence="100"
+    >
+    </trigger>
+  </triggers>
+
+  <!--  Script  -->
+  <script>
+  <![CDATA[
+-- Global variables
+session_start = os.time()
+session_total_xp = 0
+gxpRecords = {}  -- each record: { npc = <string>, xp = <number>, timestamp = <number> }
+
+-- Window configuration
+WINDOW_WIDTH = 200
+WINDOW_HEIGHT = 100
+BACKGROUND_COLOUR = ColourNameToRGB "lightblue"
+FONT_COLOUR = ColourNameToRGB "black"
+BORDER_COLOUR = ColourNameToRGB "blue"
+
+-- Called when a GXP event is triggered.
+-- wildcards[1]: optional leading ">" characters
+-- wildcards[2]: NPC name
+-- wildcards[3]: XP amount earned (as a string)
+function record_gxp(name, line, wildcards)
+  local npc = wildcards[2]
+  local xp = tonumber(wildcards[3])
+  local timestamp = os.time()
+  
+  session_total_xp = session_total_xp + xp
+  table.insert(gxpRecords, { npc = npc, xp = xp, timestamp = timestamp })
+  
+  refresh_gxp_display()
+end
+
+-- Computes metrics, prunes old records (keeping the highest kill even if older than 1 hour),
+-- and updates the mini window display.
+function refresh_gxp_display()
+  local now = os.time()
+  local total_xp_recent = 0    -- Sum for records kept (not used for session total)
+  local xp_last_30 = 0         -- Sum of XP in the last 30 minutes
+  local highest_xp = 0
+  local highest_npc = ""
+  local highest_timestamp = 0
+  
+  -- First, determine the highest kill overall from the current records.
+  for _, record in ipairs(gxpRecords) do
+    if record.xp > highest_xp then
+      highest_xp = record.xp
+      highest_npc = record.npc
+      highest_timestamp = record.timestamp
+    end
+  end
+  
+  -- Prune records older than 1 hour except for the highest kill record.
+  local newRecords = {}
+  for _, record in ipairs(gxpRecords) do
+    if now - record.timestamp <= 3600 or record.timestamp == highest_timestamp then
+      table.insert(newRecords, record)
+    end
+  end
+  gxpRecords = newRecords
+  
+  -- Calculate XP in the last 30 minutes from the pruned records.
+  for _, record in ipairs(gxpRecords) do
+    if now - record.timestamp <= 1800 then 
+      xp_last_30 = xp_last_30 + record.xp
+    end
+    total_xp_recent = total_xp_recent + record.xp
+  end
+  
+  -- New calculation for XP/hr: use up to last 11 kills.
+  local xp_per_hour = 0
+  if #gxpRecords >= 2 then
+    local nmax = 11
+    local start_index = #gxpRecords - nmax + 1
+    if start_index < 1 then start_index = 1 end
+    local subRecords = {}
+    for i = start_index, #gxpRecords do
+      table.insert(subRecords, gxpRecords[i])
+    end
+
+    if #subRecords >= 2 then
+      local first = subRecords[1]
+      local last = subRecords[#subRecords]
+      local sum_xp = 0
+      for _, record in ipairs(subRecords) do
+        sum_xp = sum_xp + record.xp
+      end
+      -- Remove the XP from the oldest kill.
+      sum_xp = sum_xp - first.xp
+      local diff = last.timestamp - first.timestamp
+      if diff > 0 then
+        xp_per_hour = sum_xp / (diff / 3600)
+      end
+    end
+  end
+  
+  -- Clear the window.
+  check(WindowRectOp(win, 2, 0, 0, 0, 0, BACKGROUND_COLOUR))
+  
+  -- Display the metrics.
+  local vertical = 6
+  WindowText(win, font_id, string.format("GXP/hr: %.0f", xp_per_hour), 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 15
+  WindowText(win, font_id, string.format("GXP past 30m: %d", xp_last_30), 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 15
+  WindowText(win, font_id, string.format("Total GXP: %d", session_total_xp), 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 15
+  WindowText(win, font_id, string.format("Highest: %s", highest_npc), 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 15
+  WindowText(win, font_id, string.format("Amount: %d", highest_xp), 10, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + 15
+  if highest_timestamp > 0 then
+    WindowText(win, font_id, string.format("At: %s", os.date("%H:%M:%S", highest_timestamp)), 10, vertical, 0, 0, FONT_COLOUR)
+  end
+  
+  WindowShow(win, true)
+end
+
+-- Drag handling functions to allow moving the window
+local startx, starty, origx, origy
+
+function mousedown(flags, hotspot_id)
+  startx, starty = WindowInfo(win, 14), WindowInfo(win, 15)
+  origx, origy = WindowInfo(win, 10), WindowInfo(win, 11)
+end
+
+function dragmove(flags, hotspot_id)
+  local posx, posy = WindowInfo(win, 17), WindowInfo(win, 18)
+  WindowPosition(win, posx - startx, posy - starty, 0, 2)
+  if posx < 0 or posx > GetInfo(281) or posy < 0 or posy > GetInfo(280) then
+    check(SetCursor(11))  -- X cursor
+  else
+    check(SetCursor(1))   -- Hand cursor
+  end
+end
+
+function dragrelease(flags, hotspot_id)
+  local newx, newy = WindowInfo(win, 17), WindowInfo(win, 18)
+  if newx < 0 or newx > GetInfo(281) or newy < 0 or newy > GetInfo(280) then
+    WindowPosition(win, origx, origy, 0, 2)
+  end
+end
+
+function reset_click(flags, hotspot_id)
+  session_start = os.time()
+  session_total_xp = 0
+  gxpRecords = {}
+  refresh_gxp_display()
+end
+
+function OnPluginInstall()
+  win = GetPluginID()
+  font_id = "fn"
+  font_name = "Fixedsys"
+  
+  session_start = os.time()
+  session_total_xp = 0
+  gxpRecords = {}
+  
+  check(WindowCreate(win, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 8, 0, BACKGROUND_COLOUR))
+  check(WindowFont(win, font_id, font_name, 9, false, false, false, false, 0, 0))
+  
+  -- Add a hotspot to allow dragging of the window
+  WindowAddHotspot(win, "drag", 0, 0, 0, 0, "", "", "mousedown", "", "", "Drag to move", 1, 0)
+  WindowDragHandler(win, "drag", "dragmove", "dragrelease", 0)
+  
+  -- Add a reset button in the upper right corner.
+  local reset_w = 30
+  local reset_h = 12
+  local reset_x = WINDOW_WIDTH - reset_w - 5  -- 5-pixel margin from right edge
+  local reset_y = 5  -- 5-pixel from top
+  WindowAddHotspot(win, "reset", reset_x, reset_y, reset_w, reset_h, "", "Reset", "mouseup", "reset_click", "", "Reset GXP counter", 1, 0)
+  
+  -- Immediately refresh and display the window on plugin load
+  refresh_gxp_display()
+end
+
+function OnPluginDisable()
+  WindowShow(win, false)
+end
+
+function OnPluginSaveState()
+  -- Optionally save state if needed.
+end
+]]>
+  </script>
+</muclient>

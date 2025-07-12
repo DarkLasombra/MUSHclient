@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<!-- Saved on Monday, February 24, 2025, 6:47 AM -->
+<!-- MuClient version 5.06 -->
+<!-- Written by Nick Gammon -->
+<!-- Home Page: http://www.mushclient.com/ -->
+
+<!-- Plugin state saved. Plugin: "Health_Bar_Miniwindow". World: "3Kingdoms". -->
+
+<muclient>
+
+<!-- variables -->
+
+<variables
+   muclient_version="5.06"
+   world_file_version="15"
+   date_saved="2025-02-24 06:47:11"
+  >
+  <variable name="enabled">true</variable>
+  <variable name="windowflags">0</variable>
+  <variable name="windowmode">8</variable>
+  <variable name="windowx">0</variable>
+  <variable name="windowy">0</variable>
+</variables>
+</muclient>

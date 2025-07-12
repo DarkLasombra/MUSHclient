@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+
+<muclient>
+<plugin
+   name="Health_Bar_Miniwindow"
+   author="Nick Gammon / Updated by User"
+   id="48062dcd6b968c590df50f32"
+   language="Lua"
+   purpose="Shows stats in a mini window, weapon info and mode/enemy health"
+   date_written="2009-02-24 13:30"
+   version="1.1"
+   save_state="y"
+   >
+<description trim="y">
+<![CDATA[
+Install this plugin to show an info bar with HP, Mana, Movement points, plus
+wielded weapon and weapon mode/enemy health info.
+The window can be dragged to a new location with the mouse.
+]]>
+</description>
+
+</plugin>
+
+<!--  Triggers  -->
+
+<triggers>
+  <trigger
+    enabled="y"
+    match="^HP:(\s*\d{1,5})\/(\s*\d{1,5}) - SP:(\s*\d{1,5})\/(\s*\d{1,5}) - C:(\s*\d{1,3}\.\d\d)% - F:(\s*\d{1,3}\.\d\d)% - L:(\s*\d{1,3})% - A:(\s*\d{1,3}\.\d\d)%"
+    regexp="y"
+    script="do_prompt"
+    sequence="100"
+  >
+  </trigger>
+  
+  <!-- Trigger to update wielded weapon -->
+  <trigger
+    enabled="y"
+    match="^You wield (.*?)\.$"
+    regexp="y"
+    script="do_wield"
+    sequence="101"
+  >
+  </trigger>
+  
+  <!-- Trigger to clear weapon when unwielded -->
+  <trigger
+    enabled="y"
+    match="^You unwield (.*?)\.$"
+    regexp="y"
+    script="do_unwield"
+    sequence="102"
+  >
+  </trigger>
+  
+  <!-- Trigger to update weapon mode and enemy health line -->
+  <trigger
+    enabled="y"
+    match="^(.*?)\-\-\-\>(.*?)$"
+    regexp="y"
+    script="do_mode_enemy"
+    sequence="103"
+  >
+  </trigger>
+
+  <!-- Trigger for "You nod." -->
+  <trigger
+    enabled="y"
+    match="^You nod\.$"
+    regexp="y"
+    script="do_nod"
+    sequence="104">
+  </trigger>
+
+</triggers>
+
+<!--  Script  -->
+
+
+<script>
+<![CDATA[
+
+GAUGE_LEFT = 65
+GAUGE_HEIGHT = 15
+
+BAR_WIDTH = 215
+EXTRA_WIDTH = 50           -- extra width for bar values display
+WINDOW_WIDTH = BAR_WIDTH + EXTRA_WIDTH
+WINDOW_HEIGHT = 150  -- (unchanged)
+
+NUMBER_OF_TICKS = 5
+
+BACKGROUND_COLOUR = ColourNameToRGB "rosybrown"
+FONT_COLOUR = ColourNameToRGB "darkred"
+BORDER_COLOUR = ColourNameToRGB "#553333"
+
+-- New global variables for weapon tracking and mode/enemy info
+weapon = "none"
+weapon_mode = ""   -- weapon mode text (e.g. "guide")
+enemy_health = 0   -- enemy health fraction (0-1)
+
+-- Add this function near the top of the script (after variable declarations)
+function capitalize(str)
+  return (str:gsub("(%S+)", function(word) 
+            return word:sub(1,1):upper() .. word:sub(2):lower() 
+          end))
+end
+
+function mousedown(flags, hotspot_id)
+  -- find where mouse is so we can adjust window relative to mouse
+  startx, starty = WindowInfo (win, 14), WindowInfo (win, 15)
+  
+  -- find where window is in case we drag it offscreen
+  origx, origy = WindowInfo (win, 10), WindowInfo (win, 11)
+end -- mousedown
+
+function dragmove(flags, hotspot_id)
+  local posx, posy = WindowInfo (win, 17),
+                     WindowInfo (win, 18)
+  WindowPosition(win, posx - startx, posy - starty, 0, 2);
+  if posx < 0 or posx > GetInfo (281) or
+     posy < 0 or posy > GetInfo (280) then
+    check (SetCursor ( 11))   -- X cursor
+  else
+    check (SetCursor ( 1))   -- hand cursor
+  end 
+end -- dragmove
+
+function dragrelease(flags, hotspot_id)
+  local newx, newy = WindowInfo (win, 17), WindowInfo (win, 18)
+  if newx < 0 or newx > GetInfo (281) or
+     newy < 0 or newy > GetInfo (280) then
+    WindowPosition(win, origx, origy, 0, 2);
+  end 
+end -- dragrelease
+
+function DoGauge (sPrompt, Fraction, Colour, valueText)
+  local frac = tonumber(Fraction)
+  if frac > 1 then frac = 1 end
+  if frac < 0 then frac = 0 end
+  local width = WindowTextWidth(win, font_id, sPrompt)
+  
+  WindowText(win, font_id, sPrompt, GAUGE_LEFT - width, vertical, 0, 0, FONT_COLOUR)
+  
+  -- Draw gauge background and fill using BAR_WIDTH instead of WINDOW_WIDTH
+  check(WindowRectOp(win, 2, GAUGE_LEFT, vertical, BAR_WIDTH - 5, vertical + GAUGE_HEIGHT, BACKGROUND_COLOUR))
+  local gauge_width = (BAR_WIDTH - GAUGE_LEFT - 5) * frac
+  if math.floor(gauge_width) > 0 then
+    WindowGradient(win, GAUGE_LEFT, vertical, GAUGE_LEFT + gauge_width, vertical + GAUGE_HEIGHT / 2, 0x000000, Colour, 2)
+    WindowGradient(win, GAUGE_LEFT, vertical + GAUGE_HEIGHT / 2, GAUGE_LEFT + gauge_width, vertical + GAUGE_HEIGHT, Colour, 0x000000, 2)
+  end
+  local ticks_at = (BAR_WIDTH - GAUGE_LEFT - 5) / (NUMBER_OF_TICKS + 1)
+  for i = 1, NUMBER_OF_TICKS do
+    WindowLine(win, GAUGE_LEFT + (i * ticks_at), vertical, GAUGE_LEFT + (i * ticks_at), vertical + GAUGE_HEIGHT, ColourNameToRGB("silver"), 0, 1)
+  end
+  check(WindowRectOp(win, 1, GAUGE_LEFT, vertical, BAR_WIDTH - 5, vertical + GAUGE_HEIGHT, ColourNameToRGB("lightgrey")))
+  
+  -- Draw the value to the right in the extra area, if provided
+  if valueText then
+    local margin = 5
+    WindowText(win, font_id, valueText, BAR_WIDTH + margin, vertical, 0, 0, FONT_COLOUR)
+  end
+  
+  vertical = vertical + font_height + 3
+end
+
+function do_prompt(name, line, wildcards)
+  local hp, max_hp = tonumber(wildcards[1]), tonumber(wildcards[2])
+  local sp, max_sp = tonumber(wildcards[3]), tonumber(wildcards[4])
+  local con = tonumber(wildcards[5]) / 100
+  local force = tonumber(wildcards[6]) / 100
+  local weap = tonumber(wildcards[7]) / 100
+  local gxp = tonumber(wildcards[8]) / 100
+
+  -- Store for use in the nod trigger
+  g_con = con
+  g_force = force
+
+  if sp <= 400 then
+    Send("cm")
+  end
+
+  if hp < 1500 then
+    Send("aaa")
+    Send("aa")
+  end
+
+  local hp_percent = hp / max_hp
+  g_hp = hp_percent  -- save player's health percent for use in do_nod
+  local sp_percent = sp / max_sp
+
+  check(WindowRectOp(win, 2, 0, 0, 0, 0, BACKGROUND_COLOUR))
+  check(WindowCircleOp(win, 3, 0, 0, 0, 0, BORDER_COLOUR, 0, 2, 0, 1))
+
+  vertical = 6
+
+  DoGauge("HP: ", hp_percent, ColourNameToRGB "darkgreen", tostring(hp))
+  DoGauge("SP: ", sp_percent, ColourNameToRGB "mediumblue", tostring(sp))
+  DoGauge("Con: ", con, ColourNameToRGB "gold", tostring(math.floor(con*100)) .. "%")
+  DoGauge("Force: ", force, ColourNameToRGB "purple", tostring(math.floor(force*100)) .. "%")
+  DoGauge("Weap: ", weap, ColourNameToRGB "red", tostring(math.floor(weap*100)) .. "%")
+  DoGauge("GXP: ", gxp, ColourNameToRGB "cyan", tostring(math.floor(gxp*100)) .. "%")
+  
+  local weapon_display = capitalize(weapon)
+  if weapon_mode and weapon_mode ~= "" then
+    weapon_display = weapon_display .. " (" .. capitalize(weapon_mode) .. ")"
+  end
+  WindowText(win, font_id, weapon_display, 6, vertical, 0, 0, FONT_COLOUR)
+  vertical = vertical + font_height + 3
+
+  WindowShow(win, true)
+end -- do_prompt
+
+function do_wield(name, line, wildcards)
+  weapon = wildcards[1]
+  update_weapon_display()
+  return
+end -- do_wield
+
+function do_unwield(name, line, wildcards)
+  weapon = "none"
+  update_weapon_display()
+  return
+end -- do_unwield
+
+function update_weapon_display()
+  local base_y = 6 + 6 * (font_height + 3)
+  check(WindowRectOp(win, 2, 6, base_y, WINDOW_WIDTH - 5, base_y + font_height, BACKGROUND_COLOUR))
+  local weapon_display = capitalize(weapon)
+  if weapon_mode and weapon_mode ~= "" then
+    weapon_display = weapon_display .. " (" .. capitalize(weapon_mode) .. ")"
+  end
+  WindowText(win, font_id, weapon_display, 6, base_y, 0, 0, FONT_COLOUR)
+end
+
+function do_mode_enemy(name, line, wildcards)
+  -- wildcards[1] is the weapon mode text; wildcards[2] is the enemy health %
+  weapon_mode = wildcards[1]
+  local percent_str = wildcards[2]:gsub("%%", "")
+  local percent = tonumber(percent_str) or 0
+  enemy_health = percent / 100
+  update_weapon_display()
+  update_enemy_health_display()
+  return
+end -- do_mode_enemy
+
+function update_enemy_health_display()
+  local base_y = 6 + 7 * (font_height + 3)
+  -- Clear the area before drawing the gauge
+  check(WindowRectOp(win, 2, GAUGE_LEFT, base_y, WINDOW_WIDTH - 5, base_y + GAUGE_HEIGHT, BACKGROUND_COLOUR))
+  
+  -- Draw enemy health percentage text on the left side
+  local enemy_text = tostring(math.floor(enemy_health * 100)) .. "%"
+  WindowText(win, font_id, enemy_text, 5, base_y, 0, 0, FONT_COLOUR)
+  
+  local gauge_width = (WINDOW_WIDTH - GAUGE_LEFT - 5) * enemy_health
+  if math.floor(gauge_width) > 0 then
+    WindowGradient(win, GAUGE_LEFT, base_y, GAUGE_LEFT + gauge_width, base_y + GAUGE_HEIGHT / 2, 
+                    0x000000,
+                    ColourNameToRGB("darkorange"), 2)
+    WindowGradient(win, GAUGE_LEFT, base_y + GAUGE_HEIGHT / 2, GAUGE_LEFT + gauge_width, base_y + GAUGE_HEIGHT,
+                    ColourNameToRGB("darkorange"), 0x000000, 2)
+  end
+  local ticks_at = (WINDOW_WIDTH - GAUGE_LEFT - 5) / (NUMBER_OF_TICKS + 1)
+  for i = 1, NUMBER_OF_TICKS do
+    WindowLine(win, GAUGE_LEFT + (i * ticks_at), base_y, GAUGE_LEFT + (i * ticks_at), base_y + GAUGE_HEIGHT, 
+               ColourNameToRGB("silver"), 0, 1)
+  end
+  check(WindowRectOp(win, 1, GAUGE_LEFT, base_y, WINDOW_WIDTH - 5, base_y + GAUGE_HEIGHT, ColourNameToRGB("lightgrey")))
+end
+
+function do_nod(name, line, wildcards)
+  if g_hp and g_hp < 0.65 then
+    Send("fh")
+  elseif g_con < 0.5 or g_force > 0.4 then
+    Send("fh")
+  else
+    Send("emote connects with the Force.")
+  end
+end -- do_nod
+
+function OnPluginInstall ()
+  win = GetPluginID ()
+  font_id = "fn"
+  font_name = "Fixedsys"
+
+  local x, y, mode, flags = 
+      tonumber (GetVariable ("windowx")) or 0,
+      tonumber (GetVariable ("windowy")) or 0,
+      tonumber (GetVariable ("windowmode")) or 8,
+      tonumber (GetVariable ("windowflags")) or 0
+  
+  check (WindowCreate (win, 
+                 x, y, WINDOW_WIDTH, WINDOW_HEIGHT,  
+                 mode,   
+                 flags,   
+                 BACKGROUND_COLOUR) )
+
+  WindowAddHotspot(win, "hs1",  
+                   0, 0, 0, 0,
+                   "",
+                   "",
+                   "mousedown",
+                   "",
+                   "",
+                   "Drag to move",
+                   1, 0)
+                   
+  WindowDragHandler(win, "hs1", "dragmove", "dragrelease", 0)
+                 
+  check (WindowFont (win, font_id, font_name, 9, false, false, false, false, 0, 0))
+  
+  font_height = WindowFontInfo (win, font_id, 1)
+  
+  if GetVariable ("enabled") == "false" then
+    ColourNote ("yellow", "", "Warning: Plugin " .. GetPluginName ().. " is currently disabled.")
+    check (EnablePlugin(GetPluginID (), false))
+    return
+  end 
+end -- OnPluginInstall
+
+function OnPluginDisable ()
+  WindowShow (win, false)
+end -- OnPluginDisable
+
+function OnPluginSaveState ()
+  SetVariable ("enabled", tostring (GetPluginInfo (GetPluginID (), 17)))
+  SetVariable ("windowx", tostring (WindowInfo (win, 10)))
+  SetVariable ("windowy", tostring (WindowInfo (win, 11)))
+  SetVariable ("windowmode", tostring (WindowInfo (win, 7)))
+  SetVariable ("windowflags", tostring (WindowInfo (win, 8)))
+end -- OnPluginSaveState
+
+]]>
+</script>
+
+</muclient>

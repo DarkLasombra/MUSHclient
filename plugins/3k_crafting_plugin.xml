@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+<muclient>
+  <plugin
+     name="Crafting_Helper"
+     author="Lazarian"
+     id="48062dcd6b968c590df50f44"
+     language="Lua"
+     purpose="Assists with managing crafting materials in 3K MUD."
+     date_written="2025-03-28"
+     requires="4.50"
+     version="1.8"
+     save_state="y"
+  >
+    <description trim="y">
+      <![CDATA[
+This plugin assists with crafting in the 3K MUD by providing commands to stash and unstash materials, track component counts from your stash list,
+and other future enhancements.
+      ]]>
+    </description>
+  </plugin>
+
+  <!-- Script -->
+  <script>
+    <![CDATA[
+-- Global window ID
+comp_win = GetPluginID() .. ":compwin"
+font_id = "compfont"
+
+-- Global state for component condense flow
+condense_state = nil
+
+-- Called when the plugin is installed (loaded)
+function OnPluginInstall()
+  print("Crafting Helper plugin loaded.")
+  create_component_window()
+end
+
+-- Called when the plugin is disabled
+function OnPluginDisable()
+  print("Crafting Helper plugin disabled.")
+  WindowShow(comp_win, false)
+end
+
+-- Called to save the plugin state
+function OnPluginSaveState()
+end
+
+function create_component_window()
+  local width, height = 400, 600
+  local x = tonumber(GetVariable("compwin_x")) or 0
+  local y = tonumber(GetVariable("compwin_y")) or 0
+
+  check(WindowCreate(comp_win, x, y, width, height, 6, 0, ColourNameToRGB("black")))
+  check(WindowFont(comp_win, font_id, "Lucida Console", 10))
+  WindowAddHotspot(comp_win, "move_hotspot", 0, 0, 0, 0, "", "", "mousedown_component_window", "", "", "Drag to move window", 1, 0)
+  WindowDragHandler(comp_win, "move_hotspot", "dragmove_component_window", "dragrelease_component_window", 0)
+  WindowShow(comp_win, true)
+end
+
+function mousedown_component_window(flags, hotspot_id)
+  startx, starty = WindowInfo(comp_win, 14), WindowInfo(comp_win, 15)
+  origx, origy = WindowInfo(comp_win, 10), WindowInfo(comp_win, 11)
+end
+
+function dragmove_component_window(flags, hotspot_id)
+  local posx, posy = WindowInfo(comp_win, 17), WindowInfo(comp_win, 18)
+  WindowPosition(comp_win, posx - startx, posy - starty, 0, 2)
+end
+
+function dragrelease_component_window(flags, hotspot_id)
+  local newx, newy = WindowInfo(comp_win, 17), WindowInfo(comp_win, 18)
+  SetVariable("compwin_x", tostring(newx))
+  SetVariable("compwin_y", tostring(newy))
+end
+
+function refresh_component_window()
+  local sorted = {}
+  for k, v in pairs(stash_info) do
+    table.insert(sorted, {name = k, info = v})
+  end
+  table.sort(sorted, function(a, b) return a.info.total > b.info.total end)
+
+  WindowRectOp(comp_win, 2, 0, 0, 0, 0, ColourNameToRGB("black"))
+
+  local y = 5
+  for _, item in ipairs(sorted) do
+    local name = item.name
+    local info = item.info
+
+    local x = 5
+    x = x + WindowText(comp_win, font_id, name .. ": ", x, y, 0, 0, ColourNameToRGB("white"))
+    x = x + WindowText(comp_win, font_id, tostring(info.total) .. " ", x, y, 0, 0, ColourNameToRGB("white"))
+    x = x + WindowText(comp_win, font_id, tostring(info.legendary) .. " ", x, y, 0, 0, ColourNameToRGB("orange"))
+    x = x + WindowText(comp_win, font_id, tostring(info.superior) .. " ", x, y, 0, 0, ColourNameToRGB("purple"))
+    x = x + WindowText(comp_win, font_id, tostring(info.good) .. " ", x, y, 0, 0, ColourNameToRGB("blue"))
+    x = x + WindowText(comp_win, font_id, tostring(info.average) .. " ", x, y, 0, 0, ColourNameToRGB("green"))
+    x = x + WindowText(comp_win, font_id, tostring(info.poor), x, y, 0, 0, ColourNameToRGB("gray"))
+
+    y = y + 14
+  end
+  WindowShow(comp_win, true)
+end
+-- Handler for the unstq command: unstq <quantity> <quality letter> <component name>
+function unstq_handler(parameters)
+  local quantity, qualityLetter, component = string.match(parameters, "^(%d+)%s+(%a)%s+(.+)$")
+  if not quantity then
+    print("Usage: unstq <quantity> <quality letter> <component name>")
+    return
+  end
+  quantity = tonumber(quantity)
+  local quality_map = { l = "legendary", s = "superior", g = "good", a = "average", p = "poor" }
+  local quality = quality_map[string.lower(qualityLetter)] or qualityLetter
+  for i = 1, quantity do
+    Send("unstash " .. quality .. " " .. component)
+  end
+end
+
+-- Handler for the stq command: stq <quantity> <quality letter> <component name>
+function stq_handler(parameters)
+  local quantity, qualityLetter, component = string.match(parameters, "^(%d+)%s+(%a)%s+(.+)$")
+  if not quantity then
+    print("Usage: stq <quantity> <quality letter> <component name>")
+    return
+  end
+  quantity = tonumber(quantity)
+  local quality_map = { l = "legendary", s = "superior", g = "good", a = "average", p = "poor" }
+  local quality = quality_map[string.lower(qualityLetter)] or qualityLetter
+  for i = 1, quantity do
+    Send("stash " .. quality .. " " .. component)
+  end
+end
+
+-- Handler for the 'xm' command: xm <quantity> <quality letter> <component name>
+function xm_handler(parameters)
+  local quantity, qualityLetter, component = string.match(parameters, "^(%d+)%s+(%a)%s+(.+)$")
+  if not quantity then
+    print("Usage: xm <quantity> <quality letter> <component name>")
+    return
+  end
+  quantity = tonumber(quantity)
+  local quality_map = { l = "legendary", s = "superior", g = "good", a = "average", p = "poor" }
+  local upgrade_map = { poor = "average", average = "good", good = "superior", superior = "legendary" }
+  local source_quality = quality_map[string.lower(qualityLetter)]
+  if not source_quality then
+    print("Invalid quality letter provided.")
+    return
+  end
+  local target_quality = upgrade_map[source_quality]
+  if not target_quality then
+    print("Component quality '" .. source_quality .. "' cannot be upgraded further.")
+    return
+  end
+  local command = "transmute " .. quantity .. " " .. source_quality .. " " .. component .. " quality to " .. target_quality
+  Send(command)
+end
+
+-- Updated handler for the 'compe' command: compe <component name> <stop quality letter>
+function compe_handler(parameters)
+  local comp_name, stopLetter = string.match(parameters, "^(.-)%s+(%a)%s*$")
+  if not comp_name or comp_name == "" or not stopLetter then
+    print("Usage: compe <component name> <stop quality letter>")
+    return
+  end
+
+  local quality_map = { p = "poor", a = "average", g = "good", s = "superior", l = "legendary" }
+  local stopQuality = quality_map[string.lower(stopLetter)]
+  if not stopQuality then
+    print("Invalid quality letter. Use one of: p, a, g, s, l.")
+    return
+  end
+
+  local quality_order = {"poor", "average", "good", "superior", "legendary"}
+  local targetIndex = nil
+  for i, quality in ipairs(quality_order) do
+    if quality == stopQuality then
+      targetIndex = i
+      break
+    end
+  end
+  if not targetIndex then
+    print("Stop quality not recognized.")
+    return
+  end
+  
+  local key = string.lower(comp_name)
+  local info = stash_info[key]
+  if not info then
+    print("No stash info for '" .. comp_name .. "'. Ensure your stash list has been captured.")
+    return
+  end
+
+  for i = 1, targetIndex do
+    local quality = quality_order[i]
+    local count = info[quality] or 0
+    if count > 0 then
+      for j = 1, count do
+        Send("unstash " .. quality .. " " .. comp_name)
+      end
+      Send("drop all")
+    end
+  end
+end
+
+stash_info = {}
+
+function stash_list_line(name, line, wildcards)
+  local parts = {}
+  for part in string.gmatch(line, "[^|]+") do
+    table.insert(parts, part:match("^%s*(.-)%s*$"))
+  end
+  if #parts < 8 then return end
+  local comp = parts[1]
+  if comp == "Component Name" or comp:match("^%-+$") then return end
+  stash_info[string.lower(comp)] = {
+    total = tonumber(parts[2]),
+    legendary = tonumber(parts[3]),
+    superior = tonumber(parts[4]),
+    good = tonumber(parts[5]),
+    average = tonumber(parts[6]),
+    poor = tonumber(parts[7])
+  }
+  print("Parsed component: " .. comp .. " T=" .. parts[2] .. " L=" .. parts[3] .. " S=" .. parts[4] .. " G=" .. parts[5] .. " A=" .. parts[6] .. " P=" .. parts[7])
+end
+
+function unstall_handler(parameters)
+  local comp_name = parameters:match("^%s*(.-)%s*$")
+  if comp_name == "" then
+    print("Usage: unstall <component name>")
+    return
+  end
+  local key = string.lower(comp_name)
+  local info = stash_info[key]
+  if not info then
+    print("No stash info for '" .. comp_name .. "'. Ensure your stash list has been captured.")
+    return
+  end
+  for _, quality in ipairs({"legendary", "superior", "good", "average", "poor"}) do
+    local count = info[quality]
+    if count and count > 0 then
+      for i = 1, count do
+        Send("unstash " .. quality .. " " .. comp_name)
+      end
+    end
+  end
+end
+
+function compinfo_handler(parameters)
+  local arg = parameters:lower():match("^%s*(.-)%s*$")
+  if arg == "" then
+    print("Usage: compinfo <component name|all>")
+    return
+  end
+  if arg == "all" then
+    for comp, info in pairs(stash_info) do
+      print("Component Data for " .. comp .. ":")
+      print("  Total: " .. (info.total or 0))
+      print("  Legendary: " .. (info.legendary or 0))
+      print("  Superior: " .. (info.superior or 0))
+      print("  Good: " .. (info.good or 0))
+      print("  Average: " .. (info.average or 0))
+      print("  Poor: " .. (info.poor or 0))
+    end
+    return
+  end
+  local key = arg
+  local info = stash_info[key]
+  if not info then
+    print("No stash data recorded for '" .. parameters .. "'.")
+    return
+  end
+  print("Component Data for " .. parameters .. ":")
+  print("  Total: " .. (info.total or 0))
+  print("  Legendary: " .. (info.legendary or 0))
+  print("  Superior: " .. (info.superior or 0))
+  print("  Good: " .. (info.good or 0))
+  print("  Average: " .. (info.average or 0))
+  print("  Poor: " .. (info.poor or 0))
+end
+
+-- Handler for the 'complist' command: resets component data and triggers list update
+function complist_handler()
+  stash_info = {}  -- Reset the component tracking table
+  Send("stl")     -- Send command to refresh the component list
+end
+
+-- Updated compc_handler: sets up the condense process and calls process_next_condense()
+function compc_handler(parameters)
+  if condense_state then
+    print("Warning: Overriding previous condense process.")
+    condense_state = nil
+  end
+
+  local comp_name, stopLetter = string.match(parameters, "^(.-)%s+(%a)%s*$")
+  if not comp_name or not stopLetter then
+    print("Usage: compc <component name> <stop quality letter>")
+    return
+  end
+
+  local quality_map = { p = "poor", a = "average", g = "good", s = "superior", l = "legendary" }
+  local stopQuality = quality_map[string.lower(stopLetter)]
+  if not stopQuality then
+    print("Invalid stop quality letter. Use one of: p, a, g, s, or l.")
+    return
+  end
+
+  local quality_order = {"poor", "average", "good", "superior", "legendary"}
+  local targetIndex = nil
+  for i, q in ipairs(quality_order) do
+    if q == stopQuality then
+      targetIndex = i
+      break
+    end
+  end
+  if not targetIndex then
+    print("Stop quality not recognized.")
+    return
+  end
+
+  local comp_key = string.lower(comp_name)
+  if not stash_info[comp_key] then
+    print("No stash info for '" .. comp_name .. "'. Ensure your stash list has been captured.")
+    return
+  end
+
+  condense_state = {
+    comp_name = comp_name,
+    comp_key = comp_key,
+    quality_order = quality_order,
+    targetIndex = targetIndex,
+    currentStep = 1,  -- starting at the lowest quality (index 1)
+    acc = 0         -- accumulator for items from previous transmute
+  }
+  process_next_condense()
+end
+
+-- This function sends the unstash commands and transmute command for the current step.
+function process_next_condense()
+  local state = condense_state
+  if not state then return end
+  
+  if state.currentStep >= state.targetIndex then
+    print("Condensing complete: final quantity " .. state.acc .. " " .. state.quality_order[state.targetIndex] .. " " .. state.comp_name)
+    condense_state = nil
+    return
+  end
+  
+  local currentQuality = state.quality_order[state.currentStep]
+  local nextQuality = state.quality_order[state.currentStep + 1]
+  local unstashCount = stash_info[state.comp_key][currentQuality] or 0
+  local available = state.acc + unstashCount
+  
+  -- Process in batches of 100 if needed.
+  local batch = available
+  if available > 100 then
+    batch = 100
+    state.batch_mode = true
+    state.remainder = available - 100
+  else
+    state.batch_mode = false
+    state.remainder = 0
+  end
+  
+  if batch <= 0 then
+    state.currentStep = state.currentStep + 1
+    process_next_condense()
+    return
+  end
+  
+  -- Determine how many components need to be unstashed now.
+  local needed = batch - state.acc
+  if needed > 0 then
+    for i = 1, math.min(needed, unstashCount) do
+      Send("unstash " .. currentQuality .. " " .. state.comp_name)
+    end
+  end
+  
+  local command = "transmute " .. batch .. " " .. currentQuality .. " " .. state.comp_name .. " quality to " .. nextQuality
+  Send(command)
+  print("Sent command: " .. command .. " (waiting for transmute result; batch_mode=" .. tostring(state.batch_mode) .. ")")
+end
+
+-- This function is called by the trigger when a transmute output line is detected.
+function condense_transmute_result(line)
+  if not condense_state then
+    return
+  end
+
+  local new_total = tonumber(line:match("^(%d+)%s+"))
+  if new_total then
+    if condense_state.batch_mode then
+      condense_state.acc = new_total + condense_state.remainder
+      print("Batch transmute result captured: " .. new_total .. " plus remainder " .. condense_state.remainder .. " = " .. condense_state.acc)
+      condense_state.batch_mode = false
+      condense_state.remainder = nil
+      process_next_condense()
+    else
+      condense_state.acc = new_total
+      print("Transmute result captured: " .. new_total)
+      condense_state.currentStep = condense_state.currentStep + 1
+      process_next_condense()
+    end
+  end
+end
+
+-- Trigger callback for transmute messages.
+function condense_transmute_trigger(name, line, wildcards)
+  -- The regex below should match the final line of a transmute message.
+  -- Adjust as needed if the output format changes.
+  if line:match("^(%d+)%s+%a+%s+.+%.$") then
+    condense_transmute_result(line)
+  end
+  return line
+end
+
+-- This function is called by the multi‐line trigger when a transmute output block is detected.
+function multi_line_xm_trigger(name, text, wildcards)
+  if not condense_state then 
+    return text 
+  end
+  if not wildcards or #wildcards < 2 then 
+    return text 
+  end
+  local final_line = wildcards[2]  -- second wildcard holds the final output line
+  if final_line then
+    local new_total = tonumber(final_line:match("^(%d+)%s+"))
+    if new_total then
+      condense_state.acc = new_total
+      print("Multi-line transmute result captured: " .. new_total)
+      condense_state.currentStep = condense_state.currentStep + 1
+      process_next_condense()
+    end
+  end
+  return text
+end
+
+-- Called when the transmutation fails due to insufficient components.
+function condense_insufficient_handler(name, line, wildcards)
+  if line:find("That is an insufficient number of") then
+    print("Insufficient components for transmutation detected. Sending 'sta' and skipping to next quality.")
+    Send("sta")
+    -- Skip this quality: assume no change, so move to the next quality.
+    condense_state.currentStep = condense_state.currentStep + 1
+    process_next_condense()
+  end
+  return line
+end
+    ]]>
+  </script>
+
+  <triggers>
+    <trigger
+        enabled="y"
+        regexp="n"
+        match="*|*|*|*|*|*|*|*|*|"
+        script="stash_list_line"
+        sequence="110"
+    />
+    <!-- Multi-line transmute output trigger using wildcards -->
+    <trigger
+        enabled="y"
+        ignore_case="y"
+        lines_to_match="4"
+        keep_evaluating="y"
+        match="^Pfffzzzt\!  You transmute\:\n(.*?)\n into\:\n(.*?)\.$"
+        multi_line="y"
+        regexp="y"
+        sequence="100"
+        script="multi_line_xm_trigger"
+    />
+    <trigger
+      enabled="y"
+      regexp="y"
+      match="^(.*?)That is an insufficient number of (.*?) for transmutation\!(.*?)$"
+      script="condense_insufficient_handler"
+      sequence="250"
+    />
+  </triggers>
+
+  <aliases>
+    <alias
+      match="^unstq (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="100"
+    >
+      <send>
+        unstq_handler("%1")
+      </send>
+    </alias>
+    <alias
+      match="^stq (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="100"
+    >
+      <send>
+        stq_handler("%1")
+      </send>
+    </alias>
+    <alias
+      match="^unstall (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="120"
+    >
+      <send>
+        unstall_handler("%1")
+      </send>
+    </alias>
+    <alias
+      match="^ci (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="130"
+    >
+      <send>
+        compinfo_handler("%1")
+      </send>
+    </alias>
+    <alias
+      match="^xm (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="140"
+    >
+      <send>
+        xm_handler("%1")
+      </send>
+    </alias>
+    <alias
+      match="^compre$"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="150"
+    >
+      <send>
+        refresh_component_window()
+      </send>
+    </alias>
+    <alias
+      match="^compe (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="160"
+    >
+      <send>
+        compe_handler("%1")
+      </send>
+    </alias>
+    <alias
+      match="^complist$"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="170"
+    >
+      <send>
+        complist_handler()
+      </send>
+    </alias>
+    <alias
+      match="^compc (.+)"
+      enabled="y"
+      regexp="y"
+      send_to="12"
+      sequence="180"
+    >
+      <send>
+        compc_handler("%1")
+      </send>
+    </alias>
+  </aliases>
+
+</muclient>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+
+<muclient>
+  <plugin
+     name="Buff_Tracker_Plugin_Psicorps"
+     author="Lasombra"
+     id="48062dcd6b968c590df50f34"
+     language="Lua"
+     purpose="Tracks active buffs and displays them in a mini window"
+     date_written="2023-10-01"
+     requires="4.40"
+     version="1.0"
+     save_state="y"
+     >
+    <description trim="y">
+    <![CDATA[
+This plugin tracks active buffs and displays them in a mini window.
+The window can be dragged to a new location with the mouse.
+]]>
+    </description>
+  </plugin>
+
+  <!--  Triggers  -->
+
+  <triggers>
+    <!-- New status bar trigger: expects nine numeric fields -->
+    <trigger
+      enabled="y"
+      match="^\[\[\s*Ap:\s*(\d+)(?:\s+Vr:\s*(\d+))?(?:\s+Bo:\s*(\d+))?(?:\s+Vv:\s*(\d+))?(?:\s+AA:\s*(\d+))?(?:\s+Vg:\s*(\d+))?(?:\s+Ac(?:3|4):\s*(\d+))?(?:\s+Bl:\s*(\d+))?(?:\s+CP:\s*(\d+))?\s*\]\]$"
+      regexp="y"
+      script="update_buff_bar"
+      sequence="100"
+    >
+    </trigger>
+  </triggers>
+
+  <!--  Script  -->
+
+  <script>
+  <![CDATA[
+
+WINDOW_WIDTH = 80  -- reduced from 200 to 100
+WINDOW_HEIGHT = 140
+BACKGROUND_COLOUR = ColourNameToRGB "lightgrey"
+FONT_COLOUR = ColourNameToRGB "black"
+BORDER_COLOUR = ColourNameToRGB "darkgrey"
+
+local buffs = {}
+local buff_zero_ticks = {}  -- tracks consecutive ticks with 0 value per buff
+
+-- Mapping of buff labels to recast commands.
+local buff_commands = {
+  Vr = "av",
+  Vv = "avv",
+  Vg = "avg",
+  Bo = "a",
+  AA = "aastr",
+  Ac = "ast",  -- changed from Ac4 to Ac
+  CP = "cp"
+}
+
+-- New function for the new status bar trigger
+function update_buff_bar(name, line, wildcards)
+  local buffList = {"Ap", "Vr", "Bo", "Vv", "AA", "Vg", "Ac", "Bl", "CP"}  -- changed from Ac4 to Ac
+  for i, buff in ipairs(buffList) do
+    local value = tonumber(wildcards[i]) or 0  -- missing values become 0
+    buffs[buff] = value
+    if value == 0 then
+      buff_zero_ticks[buff] = (buff_zero_ticks[buff] or 0) + 1
+    else
+      buff_zero_ticks[buff] = 0
+    end
+  end
+
+  -- For each buff (except Ap and Bl) that has sat at 0 for more than two ticks, send a recast command.
+  for _, buff in ipairs(buffList) do
+    if buff ~= "Ap" and buff ~= "Bl" and (buff_zero_ticks[buff] or 0) > 2 then
+      local cmd = buff_commands[buff]
+      if cmd then
+        Send(cmd)  -- sending command as defined in buff_commands
+      end
+    end
+  end
+
+  refresh_buff_display()
+end
+
+-- Left in case you need them for future use/legacy triggers
+function update_buff(name, line, wildcards)
+  local buff_name = wildcards[1]
+  local rounds = tonumber(wildcards[2])
+  buffs[buff_name] = rounds
+  refresh_buff_display()
+end
+
+function remove_buff(name, line, wildcards)
+  local buff_name = wildcards[1]
+  buffs[buff_name] = nil
+  refresh_buff_display()
+end
+
+function refresh_buff_display()
+  check(WindowRectOp(win, 2, 0, 0, 0, 0, BACKGROUND_COLOUR)) -- fill entire box
+  local vertical = 6 -- pixel start position
+  local buffList = {"Ap", "Vr", "Bo", "Vv", "AA", "Vg", "Ac", "Bl", "CP"}  -- changed from Ac4 to Ac
+  for _, buff_name in ipairs(buffList) do
+    local rounds = buffs[buff_name] or 0
+    local buff_text = string.format("%s: %d", buff_name, rounds)
+    WindowText(win, font_id, buff_text, 10, vertical, 0, 0, FONT_COLOUR)
+    vertical = vertical + 15
+  end
+  WindowShow(win, true)
+end
+
+-- Drag handling functions to allow moving the window
+local startx, starty, origx, origy
+
+function mousedown(flags, hotspot_id)
+  startx, starty = WindowInfo(win, 14), WindowInfo(win, 15)
+  origx, origy = WindowInfo(win, 10), WindowInfo(win, 11)
+end
+
+function dragmove(flags, hotspot_id)
+  local posx, posy = WindowInfo(win, 17), WindowInfo(win, 18)
+  WindowPosition(win, posx - startx, posy - starty, 0, 2)
+  if posx < 0 or posx > GetInfo(281) or posy < 0 or posy > GetInfo(280) then
+    check(SetCursor(11))  -- X cursor
+  else
+    check(SetCursor(1))   -- Hand cursor
+  end
+end
+
+function dragrelease(flags, hotspot_id)
+  local newx, newy = WindowInfo(win, 17), WindowInfo(win, 18)
+  if newx < 0 or newx > GetInfo(281) or newy < 0 or newy > GetInfo(280) then
+    WindowPosition(win, origx, origy, 0, 2)
+  end
+end
+
+function OnPluginInstall()
+  win = GetPluginID()
+  font_id = "fn"
+  font_name = "Fixedsys"
+
+  check(WindowCreate(win, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 8, 0, BACKGROUND_COLOUR))
+  check(WindowFont(win, font_id, font_name, 9, false, false, false, false, 0, 0))
+  
+  -- Add a hotspot to allow dragging of the window
+  WindowAddHotspot(win, "drag", 0, 0, 0, 0, "", "", "mousedown", "", "", "Drag to move", 1, 0)
+  WindowDragHandler(win, "drag", "dragmove", "dragrelease", 0)
+
+  if GetVariable("enabled") == "false" then
+    ColourNote("yellow", "", "Warning: Plugin " .. GetPluginName() .. " is currently disabled.")
+    check(EnablePlugin(GetPluginID(), false))
+    return
+  end
+end
+
+function OnPluginDisable()
+  WindowShow(win, false)
+end
+
+function OnPluginSaveState()
+  SetVariable("enabled", tostring(GetPluginInfo(GetPluginID(), 17)))
+end
+
+]]>
+  </script>
+</muclient>

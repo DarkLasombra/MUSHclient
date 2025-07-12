@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE muclient>
+<muclient>
+  <plugin
+     name="Chat_Capture_Plugin"
+     author="Lasombra"
+     id="48062dcd6b968c590df50f36"
+     language="Lua"
+     purpose="Capture and display chat messages in a scrollable window"
+     date_written="2025-03-16 12:00"
+     requires="4.40"
+     version="1.0"
+     save_state="y">
+    <description trim="y"><![CDATA[
+This plugin captures chat messages of the form:
+  <Psi> Sender [Level]: message text
+
+It also captures any wrapped continuation lines that start with whitespace.
+The messages are then displayed in a wide, scrollable window which loads on plugin start.
+]]></description>
+  </plugin>
+
+  <!-- Triggers -->
+  <triggers>
+    <!-- Trigger for a new chat message -->
+    <trigger
+       enabled="y"
+       match="^<Psi> (\S+) \[([0-9]+)\]: (.+)"
+       regexp="y"
+       script="capture_chat"
+       sequence="100">
+    </trigger>
+    <!-- Trigger for continuation lines (indented text) -->
+    <trigger
+       enabled="y"
+       match="^\s+(.+)"
+       regexp="y"
+       script="append_chat"
+       sequence="101">
+    </trigger>
+  </triggers>
+
+  <!-- Script -->
+  <script>
+  <![CDATA[
+-- Constants for window dimensions and colours
+WINDOW_WIDTH = 400
+WINDOW_HEIGHT = 150
+BACKGROUND_COLOUR = ColourNameToRGB "black"
+FONT_COLOUR = ColourNameToRGB "white"
+BORDER_COLOUR = ColourNameToRGB "grey"
+
+-- Global variables
+chatWindow = nil
+font_id = "fn"
+font_height = 10
+chatMessages = {}   -- Table of captured chat messages
+scrollOffset = 0    -- How many lines from the bottom to skip when displaying
+
+-- Helper: determine the maximum number of lines that fit in the window
+function getMaxLines()
+  return math.floor((WINDOW_HEIGHT - 10) / (font_height + 2))
+end
+
+-- Update the chat window by redrawing the stored messages.
+function updateChatWindow()
+  -- Clear the window (fill with background colour)
+  WindowRectOp(chatWindow, 2, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BACKGROUND_COLOUR)
+  
+  local maxLines = getMaxLines()
+  local total = #chatMessages
+  local startLine = math.max(1, total - maxLines + 1 - scrollOffset)
+  local y = 5
+  for i = startLine, total - scrollOffset do
+    WindowText(chatWindow, font_id, chatMessages[i], 5, y, 0, 0, FONT_COLOUR)
+    y = y + font_height + 2
+  end
+  
+  -- Draw a border around the window
+  WindowRectOp(chatWindow, 1, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BORDER_COLOUR)
+  
+  WindowShow(chatWindow, true)
+end
+
+-- Trigger function for new chat messages.
+-- Matches lines like: <Psi> Cable [98]: you know about convvert and sp healing i assume?
+function capture_chat(name, line, wildcards)
+  local sender = wildcards[1]
+  local level = wildcards[2]
+  local text = wildcards[3]
+  local message = "<Psi> " .. sender .. " [" .. level .. "]: " .. text
+  table.insert(chatMessages, message)
+  updateChatWindow()
+end
+
+-- Trigger function for continuation lines.
+-- Appends text to the last captured chat message.
+function append_chat(name, line, wildcards)
+  local extraText = wildcards[1]
+  if #chatMessages > 0 then
+    chatMessages[#chatMessages] = chatMessages[#chatMessages] .. " " .. extraText
+    updateChatWindow()
+  end
+end
+
+-- Functions to scroll the chat window.
+function scrollUp()
+  if scrollOffset < (#chatMessages - getMaxLines()) then
+    scrollOffset = scrollOffset + 1
+    updateChatWindow()
+  end
+end
+
+function scrollDown()
+  if scrollOffset > 0 then
+    scrollOffset = scrollOffset - 1
+    updateChatWindow()
+  end
+end
+
+-- Hotspot callback functions for scrolling.
+function scroll_up(flags, hotspot_id)
+  scrollUp()
+end
+
+function scroll_down(flags, hotspot_id)
+  scrollDown()
+end
+
+-- Remove the scroll hotspots and related functions, and add drag handling.
+function OnPluginInstall()
+  chatWindow = "ChatWindow"  -- use a named window instead of plugin id
+  local x = tonumber(GetVariable("windowx")) or 100
+  local y = tonumber(GetVariable("windowy")) or 100
+  local mode = 1  -- standard window mode
+  local flags = 0 -- no special flags
+  WindowCreate(chatWindow, x, y, WINDOW_WIDTH, WINDOW_HEIGHT, mode, flags, BACKGROUND_COLOUR)
+  
+  WindowFont(chatWindow, font_id, "Fixedsys", 9, false, false, false, false, 0, 0)
+  font_height = WindowFontInfo(chatWindow, font_id, 1)
+  
+  -- Remove scroll hotspots
+  -- Add a draggable hotspot covering the entire window:
+  WindowAddHotspot(chatWindow, "drag_window", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 
+                   "", "", "mousedown", "", "Drag to move", 1, 0)
+  WindowDragHandler(chatWindow, "drag_window", "dragmove", "dragrelease", 0)
+  
+  updateChatWindow()
+end
+
+local startx, starty, origx, origy
+
+function mousedown(flags, hotspot_id)
+  startx = WindowInfo(chatWindow, 14)
+  starty = WindowInfo(chatWindow, 15)
+  origx = WindowInfo(chatWindow, 10)
+  origy = WindowInfo(chatWindow, 11)
+end
+
+function dragmove(flags, hotspot_id)
+  local posx = WindowInfo(chatWindow, 17)
+  local posy = WindowInfo(chatWindow, 18)
+  WindowPosition(chatWindow, posx - startx, posy - starty, 0, 2)
+end
+
+function dragrelease(flags, hotspot_id)
+  -- Optionally add bounds checking here
+end
+
+-- Redirect the draggable hotspot's mousedown callback.
+function start_drag(flags, hotspot_id)
+  mousedown(flags, hotspot_id)
+end
+
+-- OnPluginDisable: Hide the chat window.
+function OnPluginDisable()
+  WindowShow(chatWindow, false)
+end
+
+-- OnPluginSaveState: Save window position and settings.
+function OnPluginSaveState()
+  SetVariable("enabled", tostring(GetPluginInfo(GetPluginID(), 17)))
+  SetVariable("windowx", tostring(WindowInfo(chatWindow, 10)))
+  SetVariable("windowy", tostring(WindowInfo(chatWindow, 11)))
+  SetVariable("windowmode", tostring(WindowInfo(chatWindow, 7)))
+  SetVariable("windowflags", tostring(WindowInfo(chatWindow, 8)))
+end
+  ]]>
+  </script>
+</muclient>
